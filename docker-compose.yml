@@ -1,0 +1,43 @@
+# Stack de dev locale : backend (FastAPI) + Ollama (modèles locaux).
+#
+# --- Spécifique à ton setup Windows + WSL2 + Docker Desktop ---
+# Tu as déjà des modèles Ollama téléchargés côté Windows. Pour éviter de les
+# re-télécharger dans le conteneur, monte directement ce dossier au lieu du volume
+# nommé `ollama_data` ci-dessous :
+#
+#   - si Docker Desktop (backend WSL2), chemin Windows direct :
+#       volumes: ["C:/Users/Ce PC/.ollama/models:/root/.ollama/models"]
+#   - si tu lances `docker compose` depuis un terminal WSL (Ubuntu), chemin /mnt/c :
+#       volumes: ["/mnt/c/Users/Ce PC/.ollama/models:/root/.ollama/models"]
+#
+# Le nom de dossier contient un espace ("Ce PC") : garde les guillemets.
+# Dans les deux cas, désactive alors le volume nommé `ollama_data` plus bas.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      args:
+        INSTALL_RAG: "true"
+    env_file: .env
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434   # nom du service Docker, pas localhost
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app   # rechargement à chaud du code pendant le dev
+      - ./data:/data
+    depends_on:
+      - ollama
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama/models
+      # Remplace la ligne ci-dessus par un montage direct de tes modèles Windows
+      # (voir commentaire en haut de ce fichier) pour ne pas re-télécharger.
+
+volumes:
+  ollama_data:
