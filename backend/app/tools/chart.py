@@ -30,7 +30,7 @@ class ChartTool(Tool):
     }
 
     async def run(self, ctx: ToolContext, description: str, data: str = "") -> ToolResult:
-        prompt = f"Graphique demandé : {description}\nDonnées : {data or 'à inventer de façon réaliste et le signaler dans le titre'}"
+        prompt = f"Graphique demandé : {description}\nDonnées : {data or 'à generer de façon réaliste et le signaler dans le titre'}"
         code, last_err = "", ""
         for _ in range(2):
             ask = prompt if not last_err else f"{prompt}\n\nTon script précédent a échoué :\n{last_err}\nCorrige-le."

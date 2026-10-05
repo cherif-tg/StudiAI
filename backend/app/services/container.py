@@ -11,8 +11,8 @@ from app.services.translation import TranslationService
 
 
 @dataclass
-class Services:
-    settings: Settings
+class Services: #Class de definitions des services exposé en API
+    settings: Settings #Paramettre des sevices
     journal: Journal
     llm: LLMClient
     rag: RagService
@@ -21,6 +21,7 @@ class Services:
 
 
 def build_services(settings: Settings) -> Services:
+    """Fonction d'implementation d'un service retourne un élément de la classe service."""
     settings.ensure_dirs()
     return Services(
         settings=settings,
@@ -31,7 +32,7 @@ def build_services(settings: Settings) -> Services:
         ollama=OllamaClient(settings),
     )
 
-
-@lru_cache
+# Le squelette des services est défini ici pour garder le code propre et structuré
+@lru_cache # Fonction de récuperation des services
 def get_services() -> Services:
     return build_services(get_settings())

@@ -73,10 +73,7 @@ suite logique une fois que l'organisation et la stack sont validées.
 | Conteneurisation | Docker + docker-compose | Fichiers fournis |
 | LLM local (dev) | Ollama | Intégration légère, voir §3 |
 
-## 3. Où Ollama s'intègre (et où il ne s'intègre pas)
 
-Tu as déjà des modèles en local via Ollama sous Windows/WSL — c'est utile, mais pas
-au même endroit que Groq :
 
 - **Groq reste le moteur de l'agent** (boucle `function calling` dans
   `orchestrator.py`). Le support des appels d'outils est inégal d'un modèle
@@ -98,6 +95,7 @@ Le `docker-compose.yml` contient en commentaire comment monter directement ton
 dossier `.ollama/models` existant (`C:\Users\Ce PC\.ollama\models`) pour ne pas
 retélécharger tes modèles dans le conteneur — adapte le chemin selon que tu
 lances `docker compose` depuis Docker Desktop (Windows) ou un terminal WSL.
+**Cette partie est resrever au machines un peu robuste reter dans la stack groq pour effectuer les taches**
 
 ## 4. Démarrage sans Docker (dev rapide)
 

@@ -2,8 +2,7 @@
 
 Protections v0 : liste blanche d'imports, mots interdits (AST), sous-processus isolé
 (`-I`), dossier temporaire, environnement minimal, limites CPU/mémoire (POSIX) et timeout.
-Ce n'est PAS une isolation forte : en production, exécuter dans un conteneur dédié
-sans réseau (`docker run --network none ...`) — voir README.
+Ce n'est PAS une isolation forte .
 """
 import ast
 import asyncio

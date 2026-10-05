@@ -1,7 +1,5 @@
 """Point d'entrée FastAPI. Encore minimal : seules les briques de base (RAG, outils,
-traduction, services) sont écrites. Les routes /chat, /sources, /tools/* et la boucle
-d'orchestration de l'agent (app/agent/orchestrator.py) sont la prochaine étape — voir
-README, section "Ce qui reste à écrire".
+traduction, services) sont écrites.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

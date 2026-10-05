@@ -1,3 +1,5 @@
+"""Configuration general de l'appication applicable dans tout le projet."""
+
 from functools import lru_cache
 from pathlib import Path
 
@@ -21,7 +23,7 @@ class Settings(BaseSettings):
 
     # LLM local (Ollama) : usage ponctuel / expérimentations hors-ligne, voir README.
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3.1"
+    ollama_model: str = "gemma4:e4b"
 
     tavily_api_key: str = ""
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"

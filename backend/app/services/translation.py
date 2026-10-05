@@ -18,7 +18,6 @@ from app.config import Settings
 LANG_CODES = {
     "fr": "fra_Latn",
     "ee": "ewe_Latn",
-    "kbp": "kbp_Latn",
 }
 
 

@@ -1,4 +1,4 @@
-"""Boucle d'orchestration de l'agent — À ÉCRIRE (prochaine étape, voir README).
+"""Boucle d'orchestration de l'agent .
 
 Squelette prévu (ReAct / function calling) :
 

@@ -1,8 +1,9 @@
+"""Schema des utilitaires du systemes prédefini et applicable dans tout le projet."""
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-OutputLanguage = Literal["fr", "ee", "kbp"]  # français, éwé, kabiyè
+OutputLanguage = Literal["fr", "ee"]  # français, éwé
 
 
 class ArtifactRef(BaseModel):

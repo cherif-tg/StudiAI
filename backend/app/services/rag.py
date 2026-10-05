@@ -1,8 +1,6 @@
 """Service RAG (ChromaDB + sentence-transformers).
 
 Interface stable : ingest / search / context_for / delete.
-Pour brancher le pipeline OpenMind (re-ranking cross-encoder), remplacer le corps de
-`search` en gardant la même signature ; le reste de l'application n'a pas à changer.
 """
 from dataclasses import dataclass
 from pathlib import Path
