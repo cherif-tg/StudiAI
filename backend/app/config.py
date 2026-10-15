@@ -11,7 +11,7 @@ class Settings(BaseSettings):
 
     app_name: str = "edu-agent"
     api_keys: str = "dev-key"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
     data_dir: Path = Path("../data")
 
     # LLM principal de l'agent (function calling) : Groq par défaut, voir README

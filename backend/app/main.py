@@ -1,15 +1,19 @@
-"""Point d'entrée FastAPI. Encore minimal : seules les briques de base (RAG, outils,
-traduction, services) sont écrites.
-"""
+"""Point d'entrée FastAPI — MVP Nunya."""
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import health
+from app.api import artifacts, chat, health, sources, translate
 from app.config import get_settings
 
 settings = get_settings()
 settings.ensure_dirs()
+
+ROOT = Path(__file__).resolve().parents[2]
+MAQUETTE = ROOT / "Charte_visuel" / "nunya-maquette.html"
 
 app = FastAPI(title=settings.app_name)
 
@@ -20,9 +24,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/artifacts", StaticFiles(directory=str(settings.artifacts_dir)), name="artifacts")
 app.include_router(health.router)
+app.include_router(chat.router)
+app.include_router(sources.router)
+app.include_router(artifacts.router)
+app.include_router(translate.router)
 
-# app.include_router(chat.router)      # TODO : POST /chat -> boucle de l'agent
-# app.include_router(sources.router)   # TODO : POST/GET/DELETE /sources
-# app.include_router(tools.router)     # TODO : POST /tools/{name} (appel direct, hors chat)
+app.mount("/artifacts", StaticFiles(directory=str(settings.artifacts_dir)), name="artifacts")
+
+
+@app.get("/")
+async def ui() -> FileResponse:
+    return FileResponse(MAQUETTE)

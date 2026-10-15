@@ -1,5 +1,4 @@
 import asyncio
-import json
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -58,5 +57,7 @@ class QuizTool(Tool):
         if quiz is None:
             return ToolResult("Échec de génération du quiz (format invalide). Réessaie.")
         payload = quiz.model_dump()
-        art = ctx.save_artifact("quiz", quiz.title, json.dumps(payload, ensure_ascii=False).encode(), "json", "application/json")
-        return ToolResult(f"Quiz « {quiz.title} » généré ({len(quiz.questions)} questions).", data=payload, artifacts=[art])
+        return ToolResult(
+            f"Quiz « {quiz.title} » généré ({len(quiz.questions)} questions).",
+            data=payload,
+        )

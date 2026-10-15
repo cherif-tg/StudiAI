@@ -2,13 +2,11 @@ from functools import lru_cache
 
 from app.services.container import Services
 from app.tools.base import Tool
-from app.tools.chart import ChartTool
-from app.tools.export_doc import ExportDocTool
 from app.tools.quiz import QuizTool
 from app.tools.rag_search import RagSearchTool
 from app.tools.summarize import SummarizeTool
-from app.tools.translate import TranslateTool
-from app.tools.web_search import WebSearchTool
+# MVP : ChartTool, TranslateTool, ExportDocTool, WebSearchTool restent dans
+# le dépôt mais ne sont pas exposés à l'agent (PLAN_REALISATION_MVP §2.2).
 
 
 class ToolRegistry:
@@ -27,8 +25,9 @@ class ToolRegistry:
 
 def build_registry() -> ToolRegistry:
     return ToolRegistry([
-        RagSearchTool(), SummarizeTool(), QuizTool(), TranslateTool(),
-        ChartTool(), ExportDocTool(), WebSearchTool(),
+        RagSearchTool(),
+        SummarizeTool(),
+        QuizTool(),
     ])
 
 

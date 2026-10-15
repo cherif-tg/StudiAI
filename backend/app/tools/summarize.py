@@ -25,5 +25,4 @@ class SummarizeTool(Tool):
         user = f"Longueur souhaitée : {LENGTHS.get(length, LENGTHS['medium'])}.\n\nTEXTE :\n{context}"
         summary = await ctx.services.llm.acomplete(SYSTEM, user)
         title = f"Résumé — {focus}" if focus else "Résumé des sources"
-        art = ctx.save_artifact("summary", title, summary.encode("utf-8"), "md", "text/markdown")
-        return ToolResult(summary, data={"markdown": summary}, artifacts=[art])
+        return ToolResult(summary, data={"markdown": summary, "title": title})

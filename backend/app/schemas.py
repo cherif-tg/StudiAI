@@ -24,6 +24,7 @@ class ToolStep(BaseModel):
     tool: str
     args: dict[str, Any]
     result_preview: str
+    data: dict[str, Any] = {}
 
 
 class Translation(BaseModel):
@@ -60,4 +61,20 @@ class ToolRunResponse(BaseModel):
 
 class TranslateRequest(BaseModel):
     text: str = Field(min_length=1)
-    target: Literal["ee", "kbp"]
+    target: Literal["ee"] = "ee"
+
+
+class TranslateResponse(BaseModel):
+    translation: str
+    target: Literal["ee"] = "ee"
+
+
+class ArtifactCreate(BaseModel):
+    session_id: str
+    kind: Literal["summary", "quiz"]
+    title: str = Field(min_length=1)
+    content: str = Field(min_length=1)
+
+
+class ArtifactInfo(ArtifactRef):
+    created_at: float | None = None
