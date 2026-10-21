@@ -13,3 +13,6 @@ data/chroma/*
 data/*.db
 !data/**/.gitkeep
 .zwork/
+
+# Notes personnelles, hors projet
+pitch.txt

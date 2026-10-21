@@ -1,6 +1,6 @@
 # Plan de réalisation — MVP Nunya (révision du 20/10/2026)
 
-> Remplace `docs/PLAN_REALISATION_MVP.md` (v1, périmé sur l'état du code) comme plan
+> Remplace `docs/archive/PLAN_REALISATION_MVP_v1.md` (périmé sur l'état du code) comme plan
 > d'exécution. Les décisions d'architecture de la v1 restent valables et sont
 > reprises ici, notamment la règle « aucun artefact persisté sans geste explicite
 > de l'apprenant ».
@@ -345,7 +345,7 @@ vérification. Tous deux sont ignorés par git.
 
 - `README.md` — état réel des briques, prérequis Python 3.12, `.env.example`.
 - `GUIDE_PROJET.md` §3 et journal — tableau d'avancement à jour.
-- `docs/PLAN_REALISATION_MVP.md` — marquer comme remplacé par ce document.
+- `docs/archive/PLAN_REALISATION_MVP_v1.md` — archivé, remplacé par ce document.
 - `docs/RECETTE_MVP.md` — à créer au lot T5.3.
 
 ---

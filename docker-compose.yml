@@ -1,43 +1,23 @@
-# Stack de dev locale : backend (FastAPI) + Ollama (modèles locaux).
+# Stack locale : API + interface dans un seul conteneur.
 #
-# --- Spécifique à ton setup Windows + WSL2 + Docker Desktop ---
-# Tu as déjà des modèles Ollama téléchargés côté Windows. Pour éviter de les
-# re-télécharger dans le conteneur, monte directement ce dossier au lieu du volume
-# nommé `ollama_data` ci-dessous :
+#   docker compose up --build     -> http://localhost:8000/
 #
-#   - si Docker Desktop (backend WSL2), chemin Windows direct :
-#       volumes: ["C:/Users/Ce PC/.ollama/models:/root/.ollama/models"]
-#   - si tu lances `docker compose` depuis un terminal WSL (Ubuntu), chemin /mnt/c :
-#       volumes: ["/mnt/c/Users/Ce PC/.ollama/models:/root/.ollama/models"]
+# Le modèle d'embedding est téléchargé pendant la construction de l'image :
+# le premier démarrage ne dépend pas du réseau. Compte 1,5 Go d'image et
+# environ 1 Go de RAM une fois le moteur chargé.
 #
-# Le nom de dossier contient un espace ("Ce PC") : garde les guillemets.
-# Dans les deux cas, désactive alors le volume nommé `ollama_data` plus bas.
+# Ce fichier ne sert qu'au développement et aux démonstrations locales. Pour un
+# déploiement public, voir docs/DEPLOIEMENT.md (interface sur Vercel, API à part).
 
 services:
-  backend:
+  nunya:
     build:
-      context: ./backend
-      args:
-        INSTALL_RAG: "true"
+      context: .
+      dockerfile: backend/Dockerfile
     env_file: .env
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434   # nom du service Docker, pas localhost
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/app:/app/app   # rechargement à chaud du code pendant le dev
-      - ./data:/data
-    depends_on:
-      - ollama
-
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama/models
-      # Remplace la ligne ci-dessus par un montage direct de tes modèles Windows
-      # (voir commentaire en haut de ce fichier) pour ne pas re-télécharger.
-
-volumes:
-  ollama_data:
+      # Tout l'état vit ici : base vectorielle, journal SQLite, artefacts, uploads.
+      - ./data:/srv/data
+    restart: unless-stopped
