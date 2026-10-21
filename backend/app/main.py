@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import agent, artifacts, auth, chat, health, sources, translate
@@ -68,11 +68,24 @@ if (DIST / "assets").is_dir():
 
 
 @app.get("/", include_in_schema=False)
-async def ui() -> FileResponse:
+async def ui():
     if INDEX.exists():
         return FileResponse(INDEX)
     # Repli : maquette HTML historique, pour ne jamais servir une page blanche.
-    return FileResponse(MAQUETTE)
+    if MAQUETTE.exists():
+        return FileResponse(MAQUETTE)
+    # Déploiement API seule (interface hébergée ailleurs) : on répond quelque
+    # chose d'utile plutôt qu'une erreur, parce que cette URL sera visitée.
+    return HTMLResponse(
+        "<!doctype html><html lang='fr'><meta charset='utf-8'>"
+        "<title>Nunya — API</title>"
+        "<body style='font-family:system-ui;padding:48px;line-height:1.6;max-width:60ch'>"
+        "<h1>Nunya — API</h1>"
+        "<p>Ce serveur expose l'API. L'interface est hébergée séparément.</p>"
+        "<p><a href='/health'>État du service</a> · <a href='/docs'>Documentation de l'API</a></p>"
+        "</body></html>",
+        status_code=200,
+    )
 
 
 @app.get("/{chemin:path}", include_in_schema=False)

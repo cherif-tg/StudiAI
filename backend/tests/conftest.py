@@ -17,6 +17,9 @@ os.environ["DATA_DIR"] = str(TEST_DATA_DIR)
 os.environ["GROQ_API_KEY"] = ""
 os.environ["TRANSLATION_MODE"] = "disabled"
 os.environ["RAG_WARMUP"] = "0"  # ne pas charger torch pendant les tests rapides
+# Les tests ne doivent pas dependre du .env local : en production cross-site,
+# le cookie devient Secure et le client de test (HTTP) ne le renverrait plus.
+os.environ["COOKIE_SAMESITE"] = "lax"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -34,6 +37,7 @@ def settings() -> Settings:
         groq_api_key="",
         translation_mode="disabled",
         rag_warmup=False,
+        cookie_samesite="lax",
     )
 
 
