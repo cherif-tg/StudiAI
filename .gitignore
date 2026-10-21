@@ -5,9 +5,11 @@ __pycache__/
 .pytest_cache/
 node_modules/
 dist/
+frontend/dist-smoke/
+tools/
 data/uploads/*
 data/artifacts/*
 data/chroma/*
 data/*.db
 !data/**/.gitkeep
-.env.example
+.zwork/

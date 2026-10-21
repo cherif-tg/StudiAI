@@ -1,0 +1,23 @@
+# Contexte de construction volontairement étroit : l'image n'a besoin que du
+# code, des dépendances et de l'interface compilée.
+
+.git
+.gitignore
+.zwork
+.venv
+**/.venv
+**/__pycache__
+**/*.pyc
+
+frontend/node_modules
+frontend/dist
+frontend/dist-smoke
+frontend/scripts
+
+data
+docs
+pitch.txt
+README.md
+GUIDE_PROJET.md
+PLAN_IMPLEMENTATION.md
+docker-compose*.yml

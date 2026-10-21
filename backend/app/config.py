@@ -11,15 +11,34 @@ class Settings(BaseSettings):
 
     app_name: str = "edu-agent"
     api_keys: str = "dev-key"
-    cors_origins: str = "http://localhost:5173"
+    cors_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
     data_dir: Path = Path("../data")
 
     # LLM principal de l'agent (function calling) : Groq par défaut, voir README
     # pour pourquoi Ollama n'est pas recommandé pour cette boucle précise.
     llm_provider: str = "groq"
     groq_api_key: str = ""
-    llm_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-120b"
     max_agent_steps: int = 5
+    # Préchauffage du RAG au démarrage (désactivable : tests, machine sans RAG).
+    rag_warmup: bool = True
+
+    # --- Garde-fous d'exposition publique --------------------------------
+    # Refus au-delà de cette taille par fichier (le corps est lu par blocs).
+    max_upload_mb: int = 20
+    # Plafond global du dossier d'uploads, pour ne pas remplir le disque.
+    max_storage_mb: int = 500
+    # Fenêtre glissante sur /chat : protège le quota du fournisseur de modèle.
+    chat_rate_limit: int = 30
+    chat_rate_window_s: int = 600
+    # Derrière cloudflared ou Caddy : faire confiance aux en-têtes d'adresse.
+    trust_proxy_headers: bool = True
+
+    # --- Déploiement séparé (interface sur Vercel, API ailleurs) ---------
+    # "lax"   : interface et API sur le même domaine (app.exemple.tg + api.exemple.tg)
+    # "none"  : deux domaines différents (exige HTTPS, et peut être bloqué par
+    #           les navigateurs qui refusent les cookies tiers)
+    cookie_samesite: str = "lax"
 
     # LLM local (Ollama) : usage ponctuel / expérimentations hors-ligne, voir README.
     ollama_base_url: str = "http://localhost:11434"
