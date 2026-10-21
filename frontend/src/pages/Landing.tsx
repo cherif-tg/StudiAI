@@ -212,7 +212,7 @@ export function Landing() {
         <footer className="footer">
           <span>Nunya — projet d'agent éducatif, Togo. MVP documentaire en construction.</span>
           <span className="row gap-4">
-            <Link to="/aide">Aide</Link>
+            <Link to="/documentation">Documentation</Link>
             <Link to="/reglages">Réglages</Link>
             <Link to="/connexion">Connexion</Link>
           </span>

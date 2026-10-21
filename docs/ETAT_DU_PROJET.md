@@ -15,9 +15,11 @@
 | Tests backend | **19 tests** | `pytest` en 14 s, sans réseau |
 | Frontend React | **Écrit et construit** | `npm run typecheck` OK, build 322 Ko, 7 routes rendues sans erreur |
 | Design system | **Fait** | jetons issus de `Charte_visuel/nunya-etude-graphique.md` |
-| Documentation utilisateur | **Fait** | page `/aide` in-app |
-| Documentation technique | **Fait** | `docs/FRONTEND.md` |
-| Déploiement | **À faire** | — |
+| Documentation utilisateur | **Fait** | page `/documentation` intégrée, 7 sections avec recherche |
+| Documentation technique | **Fait** | `docs/FRONTEND.md`, `docs/DEPLOIEMENT.md` |
+| Garde-fous d'exposition publique | **Fait** | taille, stockage, débit — 5 tests dédiés |
+| Mise en ligne | **Tunnel opérationnel** | `scripts/tunnel.ps1`, URL `trycloudflare.com` éphémère |
+| Serveur permanent | **À faire** | image Docker prête, hébergeur non choisi |
 | Traduction éwé active | **Hors MVP** | `TRANSLATION_MODE=disabled` |
 
 ## 2. Comment lancer
@@ -43,16 +45,17 @@ Après une modification du frontend : `cd frontend; npm run build` (FastAPI sert
 4. **Interface React servie par FastAPI** — pas de serveur Node en production ; `dist/` monté sur `/`.
 5. **Aucune simulation** — les outils non branchés (graphique, fiche, export, traduction) sont désactivés et expliqués.
 6. **Pas d'authentification** — la page de connexion l'annonce et propose une session locale.
+7. **Démonstration : local + tunnel Cloudflare** — pas de domaine pour l'instant ; garde-fous activés (20 Mo par fichier, 500 Mo de stockage, 30 questions / 10 min). Voir `docs/DEPLOIEMENT.md`.
 
 ## 4. Ce qui reste
 
 - **Contrôle visuel par un humain** : le navigateur automatisé refuse `localhost`, seuls des tests de rendu (jsdom) ont été faits.
-- **Déploiement** : image Docker (le RAG pèse ~2 Go), hébergement ≥ 2 Go de RAM, ou démo locale + tunnel.
+- **Serveur permanent** : l'image Docker est prête ; il reste à choisir l'hébergeur et à brancher un domaine.
 - **Démarrage à froid** : 1 à 8 minutes selon la machine (Defender scanne `torch`). Le serveur préchauffe le RAG ; `/health` expose `rag`.
 - **Après le MVP** : traduction éwé, fiches bilingues, export, graphiques, comptes utilisateurs.
 
 ## 5. Pièges connus
 
-- Le garde-fou d'écriture de l'agent confond parfois un champ de formulaire avec un secret (`autoComplete="current-password"`, `groq_api_key: str = ""`). Signaler, ne pas contourner.
+- Le garde-fou d'écriture de l'agent confond parfois un champ de formulaire ou un réglage de clé vide avec un vrai secret. Signaler la fausse détection, ne pas contourner.
 - `frontend/dist` doit être reconstruit après chaque modification, sinon l'ancien bundle reste servi.
 - Les documents indexés vivent dans `data/chroma` ; supprimer un document retire ses passages de l'index.

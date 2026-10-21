@@ -211,7 +211,7 @@ export function Settings() {
                 pensé pour fonctionner en français et, après le MVP, en éwé.
               </p>
               <div className="row gap-2" style={{ marginTop: 12 }}>
-                <Link to="/aide" className="btn btn--sm">
+                <Link to="/documentation" className="btn btn--sm">
                   <Icon name="aide" size={13} />
                   Guide d'utilisation
                 </Link>

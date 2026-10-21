@@ -6,6 +6,7 @@ import { ThemeProvider } from "./context/ThemeProvider";
 import { ToastProvider } from "./context/ToastProvider";
 import { Auth } from "./pages/Auth";
 import { Carnet } from "./pages/Carnet";
+import { Documentation } from "./pages/Documentation";
 import { Help } from "./pages/Help";
 import { Landing } from "./pages/Landing";
 import { NotFound } from "./pages/NotFound";
@@ -33,6 +34,7 @@ export function App() {
               <Route path="/atelier" element={<Workspace />} />
               <Route path="/carnet" element={<Carnet />} />
               <Route path="/reglages" element={<Settings />} />
+              <Route path="/documentation" element={<Documentation />} />
               <Route path="/aide" element={<Help />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

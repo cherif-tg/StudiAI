@@ -9,7 +9,7 @@ import { useTheme } from "../context/ThemeProvider";
 const LIENS = [
   { to: "/atelier", label: "Atelier" },
   { to: "/carnet", label: "Carnet" },
-  { to: "/aide", label: "Aide" },
+  { to: "/documentation", label: "Documentation" },
 ];
 
 function BasculeTheme() {
