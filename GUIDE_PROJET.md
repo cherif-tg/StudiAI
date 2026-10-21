@@ -74,21 +74,22 @@ voici l'état réel, brique par brique :
 
 | Brique | État |
 |---|---|
-| Configuration, schémas d'API, stockage (journal SQLite) |  Écrit |
-| Pipeline RAG (ChromaDB + embeddings) | Écrit |
-| Traduction locale (branchement sur tg_nlp_toolkit) |  Écrit, **à connecter** au vrai modèle |
-| Outils : résumé, quiz, traduction, graphique, export PDF/Word, recherche web |  Écrits individuellement |
-| Exécution encadrée des scripts de graphiques (sandbox) |  Écrit |
-| Route `/health` |  Écrite |
-| **Boucle de l'agent** (qui décide quel outil appeler et quand) |  **Pas encore écrite** — squelette commenté dans `agent/orchestrator.py` |
-| Routes `/chat`, `/sources`, `/tools/*` |  Pas encore écrites |
-| Interface web (Sources / Chat / Atelier) |  Pas commencée |
-| Carnet de progression (couche ludique) |  Pas commencé |
-| Identité de marque (nom en Éwé, charte visuelle) |  Pas tranché |
+| Configuration, schémas d'API, stockage (journal SQLite) | Écrit |
+| Pipeline RAG (ChromaDB + embeddings) | Écrit, **validé** sur 2 DOCX + 1 PDF (5/5 requêtes pertinentes) |
+| Traduction locale (branchement sur tg_nlp_toolkit) | Écrit, **à connecter** au vrai modèle |
+| Outils : résumé, quiz, traduction, graphique, export PDF/Word, recherche web | Écrits ; seuls `rag_search`, `summarize`, `generate_quiz` sont exposés à l'agent (périmètre MVP) |
+| Exécution encadrée des scripts de graphiques (sandbox) | Écrit, hors périmètre MVP |
+| Routes `/health`, `/chat`, `/sources`, `/artifacts`, `/translate` | Écrites |
+| **Boucle de l'agent** (qui décide quel outil appeler et quand) | **Écrite**, à valider avec une vraie clé Groq |
+| Interface web (Sources / Chat / Atelier) | **Maquette HTML unique servie par l'API** (`Charte_visuel/nunya-maquette.html`) |
+| Carnet de progression (couche ludique) | Version minimale (titre, type, date) branchée sur SQLite |
+| Tests automatisés | **19 tests** (dont la boucle agent avec faux LLM) |
+| Identité de marque (nom en Éwé, charte visuelle) | Charte et maquette produites ; nom « Nunya » retenu dans les documents MVP |
 
-Autrement dit : **les fondations techniques sont posées, mais rien ne
-fonctionne encore de bout en bout.** La prochaine étape qui débloque tout le
-reste est la boucle de l'agent (section 5, étape 1).
+Autrement dit : **le code du MVP est en place, mais la chaîne n'a pas encore
+été prouvée sur de vrais documents.** Le verrou n'est plus l'écriture, c'est la
+validation (RAG réel + réponses ancrées + tests). Voir
+`docs/PLAN_REALISATION_MVP_v2.md`.
 
 ---
 
@@ -96,11 +97,12 @@ reste est la boucle de l'agent (section 5, étape 1).
 
 Pas à pas complet dans `README.md`. En résumé :
 
-```bash
+```powershell
+uv venv .venv
+uv pip install --python .venv\Scripts\python.exe -r backend\requirements.txt -r backend\requirements-rag.txt -r backend\requirements-dev.txt
+Copy-Item .env.example .env   # puis renseigner GROQ_API_KEY
 cd backend
-pip install -r requirements.txt -r requirements-rag.txt
-cp ../.env.example ../.env   # puis renseigner GROQ_API_KEY
-uvicorn app.main:app --reload
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
 Vérifier que ça tourne : `http://localhost:8000/health` → `{"status": "ok"}`.
@@ -109,21 +111,19 @@ Vérifier que ça tourne : `http://localhost:8000/health` → `{"status": "ok"}`
 
 ## 5. Comment continuer — par ordre de priorité
 
-1. **Écrire la boucle de l'agent** (`backend/app/agent/orchestrator.py`) —
-   le squelette commenté dans le fichier explique précisément les étapes.
-   C'est le verrou principal : rien n'est démontrable tant que ce n'est pas
-   fait.
-2. **Écrire les routes API** (`backend/app/api/chat.py`, `sources.py`) qui
-   appellent cette boucle et permettent d'uploader des documents.
-3. **Brancher la traduction** sur le vrai modèle de tg_nlp_toolkit
-   (`backend/app/services/translation.py`, mode `local` ou `remote` selon où
-   tourne le modèle).
-4. **Construire l'interface web**, volet par volet : Sources d'abord (le plus
-   simple), puis Chat, puis Atelier.
-5. **Carnet de progression** une fois qu'il y a des artefacts générés à
-   afficher.
-6. **Identité de marque** : peut avancer en parallèle de tout le reste, n'importe
-   qui dans l'équipe peut proposer des pistes de nom en Éwé.
+1. **Valider le RAG sur de vrais documents** : installer `requirements-rag.txt`,
+   déposer 2 PDF + 1 DOCX, vérifier que la recherche remonte le bon passage.
+   C'est le risque n°1 du projet.
+2. **Valider la boucle de l'agent** avec une vraie clé Groq : 5 questions
+   ancrées dans les sources, et un refus correct sur une question hors corpus.
+3. **Écrire les tests** — en priorité un test de la boucle avec un faux client
+   LLM, qui protège le cœur du produit sans réseau ni coût.
+4. **Assainir l'interface** : retirer les données de démonstration, brancher les
+   états d'erreur, marquer les outils hors périmètre comme indisponibles.
+5. **Recette + déploiement** : 3 documents, critères du cahier des charges MVP,
+   démo rejouable et vidéo de secours.
+6. **Identité de marque** : la charte et la maquette sont faites ; il reste à
+   faire valider le nom par un locuteur natif.
 
 ### Qui peut prendre quoi
 
@@ -158,6 +158,10 @@ Pour que tout le monde voie où en est le projet sans avoir à demander :
 
 - 2026-10-03 : scaffold initial du backend (services, outils, config) +
   Dockerfile/docker-compose + README technique.
+- 2026-10-20 : boucle d'agent, routes `/chat`, `/sources`, `/artifacts`,
+  `/translate` et branchement de la maquette sur l'API réelle. Plan de
+  réalisation révisé (`docs/PLAN_REALISATION_MVP_v2.md`) : le verrou n'est plus
+  l'écriture mais la validation (RAG réel, tests, interface sans données de démo).
 
 <!-- Ajouter une ligne datée à chaque étape importante franchie. -->
 

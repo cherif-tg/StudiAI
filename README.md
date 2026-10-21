@@ -46,22 +46,28 @@ edu-agent/
 └── .gitignore
 ```
 
-**Ce qui est déjà écrit** : la configuration, les schémas d'API, le journal
-SQLite, le pipeline RAG, la traduction, le bac à sable d'exécution de graphiques,
-et les 7 outils de l'agent (recherche RAG, résumé, quiz, traduction, graphique,
-export de document, recherche web).
+**Ce qui est écrit** : la configuration, les schémas d'API, le journal SQLite,
+le pipeline RAG, les services de traduction, le bac à sable d'exécution, les 7
+outils de l'agent, **la boucle d'orchestration** (`app/agent/orchestrator.py`),
+**les routes** `/chat`, `/sources`, `/artifacts`, `/translate`, `/health`, et la
+**maquette d'interface branchée sur l'API réelle** (servie à la racine `/`).
 
-**Ce qui reste à écrire** : la boucle d'orchestration elle-même
-(`app/agent/orchestrator.py`, squelette déjà commenté), les routes API
-`/chat`, `/sources`, `/tools/*`, et l'interface web à trois volets. C'est la
-suite logique une fois que l'organisation et la stack sont validées.
+**Ce qui reste à faire avant de parler de MVP livré** : prouver la chaîne sur de
+vrais documents (ingestion + recherche RAG, réponses ancrées avec Groq), écrire
+les tests, retirer les données de démonstration de l'interface, et déployer. Le
+détail jour par jour est dans `docs/PLAN_REALISATION_MVP_v2.md`.
+
+**Périmètre MVP actif** (voir `docs/Nunya_Cahier_des_charges_MVP.docx`) : chat,
+sources, résumé, quiz, persistance à la demande. Les outils `chart`, `translate`,
+`export_doc` et `web_search` restent dans le dépôt mais ne sont pas exposés à
+l'agent pour cette itération.
 
 ## 2. Technologies par brique
 
 | Brique | Technologie retenue | Statut |
 |---|---|---|
 | API | FastAPI + Uvicorn | Squelette en place |
-| Agent (function calling) | Groq (Llama 3.3), via le SDK `groq` | Client écrit, boucle à écrire |
+| Agent (function calling) | Groq (`openai/gpt-oss-120b`), via le SDK `groq` | Boucle écrite, validée avec une vraie clé |
 | RAG | ChromaDB (persistant) + sentence-transformers multilingue | Service écrit |
 | Traduction locale | tg_nlp_toolkit (NLLB-200 + LoRA), en local ou via un service distant (ton HF Space) | Service écrit, à brancher sur ton modèle |
 | Génération de documents | `python-docx` (Word), `reportlab` (PDF) | Outil écrit |
@@ -69,7 +75,7 @@ suite logique une fois que l'organisation et la stack sont validées.
 | Génération de quiz | Sortie JSON structurée validée par Pydantic | Outil écrit |
 | Recherche web | API Tavily (optionnelle) | Outil écrit |
 | Stockage | SQLite (journal, artefacts) + fichiers sur disque | Écrit |
-| Frontend | à définir (React conseillé pour les 3 volets synchronisés) | Non commencé |
+| Frontend | React 19 + TypeScript + Vite, servi par FastAPI (`frontend/dist`) | Écrit, build et rendu vérifiés — voir `docs/FRONTEND.md` |
 | Conteneurisation | Docker + docker-compose | Fichiers fournis |
 | LLM local (dev) | Ollama | Intégration légère, voir §3 |
 
@@ -97,21 +103,34 @@ retélécharger tes modèles dans le conteneur — adapte le chemin selon que tu
 lances `docker compose` depuis Docker Desktop (Windows) ou un terminal WSL.
 **Cette partie est resrever au machines un peu robuste reter dans la stack groq pour effectuer les taches**
 
-## 4. Démarrage sans Docker (dev rapide)
+## 4. Démarrage sans Docker (dev rapide, uv)
 
-```bash
+Le venv est géré avec [uv](https://docs.astral.sh/uv/) à la racine du projet :
+
+```powershell
+uv venv .venv
+uv pip install --python .venv\Scripts\python.exe -r backend\requirements.txt -r backend\requirements-rag.txt -r backend\requirements-dev.txt
+Copy-Item .env.example .env       # puis renseigner GROQ_API_KEY
 cd backend
-python -m venv .venv && source .venv/bin/activate   # .venv\Scripts\activate sous Windows
-pip install -r requirements.txt -r requirements-rag.txt
-cp ../.env.example ../.env   # puis renseigner GROQ_API_KEY
-uvicorn app.main:app --reload
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
-`GET http://localhost:8000/health` doit répondre `{"status": "ok"}`.
+`GET http://localhost:8000/health` doit répondre `{"status": "ok"}`, et
+`http://localhost:8000/` sert l'interface.
 
-## 5. Prochaines étapes suggérées
+> Le venv racine tourne en Python 3.13 ; l'image Docker épingle 3.12. Si
+> l'installation du RAG (`torch`, `chromadb`) échoue en 3.13, créer le venv avec
+> `uv venv --python 3.12 .venv` pour retrouver la parité avec le conteneur.
 
-1. Écrire `app/agent/orchestrator.py` (squelette déjà détaillé dans le fichier).
-2. Écrire les routes `app/api/chat.py` et `app/api/sources.py`.
-3. Brancher `translation.py` sur le modèle réel de tg_nlp_toolkit (mode `local` ou `remote`).
-4. Démarrer l'interface web (volet Sources d'abord, le plus simple).
+## 5. Prochaines étapes
+
+Le plan d'exécution à jour est `docs/PLAN_REALISATION_MVP_v2.md` (révisé le
+20/10/2026) : quatre sprints, avec pour chacun une porte de sortie vérifiable.
+
+1. **Prouver le RAG** sur de vrais PDF/DOCX (ingestion, recherche, suppression).
+2. **Prouver la boucle agent** avec une vraie clé Groq, dont le refus de répondre
+   hors corpus.
+3. **Écrire les tests** (dont un test de la boucle avec un faux client LLM).
+4. **Retirer les données de démonstration** de la maquette et brancher les états
+   d'erreur.
+5. **Déployer** et enregistrer une démo de secours.
