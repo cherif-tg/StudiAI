@@ -1,7 +1,12 @@
 """Service RAG (ChromaDB + sentence-transformers).
 
 Interface stable : ingest / search / context_for / delete.
+
+`warmup()` existe parce que le premier chargement (import de torch + modèle
+d'embedding) coûte de 50 s à plusieurs minutes selon la machine : on le fait au
+démarrage du serveur, en tâche de fond, plutôt qu'au premier document déposé.
 """
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -26,18 +31,34 @@ class RagService:
         self.settings = settings
         self._collection = None
         self._embedder = None
+        self._lock = threading.Lock()
+        self.ready = False
 
     def _ensure(self):
         if self._collection is not None:
             return
+        with self._lock:
+            if self._collection is not None:  # un autre thread a chargé entre-temps
+                return
+            try:
+                import chromadb
+                from sentence_transformers import SentenceTransformer
+            except ImportError as e:
+                raise RagUnavailable("Installe requirements-rag.txt pour activer le RAG") from e
+            client = chromadb.PersistentClient(path=str(self.settings.chroma_dir))
+            self._collection = client.get_or_create_collection("sources", metadata={"hnsw:space": "cosine"})
+            self._embedder = SentenceTransformer(self.settings.embedding_model)
+            self.ready = True
+
+    def warmup(self) -> bool:
+        """Charge Chroma + le modèle d'embedding. Ne lève jamais : le serveur doit
+        démarrer même si le RAG est indisponible (mode dégradé explicite)."""
         try:
-            import chromadb
-            from sentence_transformers import SentenceTransformer
-        except ImportError as e:
-            raise RagUnavailable("Installe requirements-rag.txt pour activer le RAG") from e
-        client = chromadb.PersistentClient(path=str(self.settings.chroma_dir))
-        self._collection = client.get_or_create_collection("sources", metadata={"hnsw:space": "cosine"})
-        self._embedder = SentenceTransformer(self.settings.embedding_model)
+            self._ensure()
+            return True
+        except Exception:  # noqa: BLE001 - le démarrage ne doit pas échouer
+            self.ready = False
+            return False
 
     def _embed(self, texts: list[str]) -> list[list[float]]:
         return self._embedder.encode(texts, normalize_embeddings=True).tolist()
@@ -49,10 +70,13 @@ class RagService:
         return {"source_id": source_ids[0]} if len(source_ids) == 1 else {"source_id": {"$in": source_ids}}
 
     def ingest(self, source_id: str, path: Path, filename: str) -> int:
-        self._ensure()
+        # Extraction d'abord : un fichier illisible ou d'un format non supporté
+        # doit échouer vite, sans charger le modèle d'embedding (plusieurs
+        # secondes) pour rien.
         chunks = chunk_text(extract_text(path))
         if not chunks:
             raise ValueError("Aucun texte exploitable dans ce document (PDF scanné ?)")
+        self._ensure()
         self._collection.add(
             ids=[f"{source_id}:{i}" for i in range(len(chunks))],
             documents=chunks,

@@ -18,8 +18,10 @@ class Settings(BaseSettings):
     # pour pourquoi Ollama n'est pas recommandé pour cette boucle précise.
     llm_provider: str = "groq"
     groq_api_key: str = ""
-    llm_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-120b"
     max_agent_steps: int = 5
+    # Préchauffage du RAG au démarrage (désactivable : tests, machine sans RAG).
+    rag_warmup: bool = True
 
     # LLM local (Ollama) : usage ponctuel / expérimentations hors-ligne, voir README.
     ollama_base_url: str = "http://localhost:11434"
