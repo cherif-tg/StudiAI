@@ -70,10 +70,26 @@ class TranslateResponse(BaseModel):
 
 
 class ArtifactCreate(BaseModel):
-    session_id: str
     kind: Literal["summary", "quiz"]
     title: str = Field(min_length=1)
     content: str = Field(min_length=1)
+
+
+class RegisterRequest(BaseModel):
+    name: str = Field(min_length=2, max_length=80)
+    email: str = Field(min_length=5, max_length=160)
+    mot_de_passe: str = Field(min_length=8, max_length=128)
+
+
+class LoginRequest(BaseModel):
+    email: str = Field(min_length=5, max_length=160)
+    mot_de_passe: str = Field(min_length=1, max_length=128)
+
+
+class UserPublic(BaseModel):
+    id: str
+    email: str
+    name: str | None = None
 
 
 class ArtifactInfo(ArtifactRef):

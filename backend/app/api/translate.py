@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.deps import utilisateur_requis
 from app.schemas import TranslateRequest, TranslateResponse
 from app.services.container import Services, get_services
 from app.services.translation import TranslationUnavailable
@@ -10,6 +11,7 @@ router = APIRouter(tags=["translate"])
 @router.post("/translate", response_model=TranslateResponse)
 async def translate(
     req: TranslateRequest,
+    _user: dict = Depends(utilisateur_requis),
     services: Services = Depends(get_services),
 ) -> TranslateResponse:
     try:

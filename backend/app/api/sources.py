@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 
+from app.api.deps import proprietaire
 from app.api.guards import verifier_taille_annoncee
 from app.schemas import SourceInfo
 from app.services.container import Services, get_services
@@ -42,6 +43,7 @@ async def _lire_avec_plafond(fichier: UploadFile, plafond_octets: int, plafond_m
 async def upload_source(
     request: Request,
     file: UploadFile = File(...),
+    owner: str = Depends(proprietaire),
     services: Services = Depends(get_services),
 ) -> SourceInfo:
     reglages = services.settings
@@ -58,9 +60,13 @@ async def upload_source(
         )
 
     filename = file.filename or "document"
-    source_id = uuid.uuid4().hex[:12]
+    # L'identifiant de source porte le propriétaire : un identifiant d'un autre
+    # compte ne peut donc pas être deviné puis utilisé.
+    source_id = f"{owner[:8]}-{uuid.uuid4().hex[:12]}"
     dest = reglages.uploads_dir / f"{source_id}{Path(filename).suffix}"
-    contenu = await _lire_avec_plafond(file, reglages.max_upload_mb * 1024 * 1024, reglages.max_upload_mb)
+    contenu = await _lire_avec_plafond(
+        file, reglages.max_upload_mb * 1024 * 1024, reglages.max_upload_mb
+    )
     dest.write_bytes(contenu)
 
     try:
@@ -71,28 +77,36 @@ async def upload_source(
     except ValueError as exc:
         dest.unlink(missing_ok=True)
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    services.journal.add_source(source_id, filename, chunks)
+    services.journal.add_source(owner, source_id, filename, chunks)
     return SourceInfo(id=source_id, filename=filename, chunks=chunks)
 
 
 @router.get("/sources", response_model=list[SourceInfo])
-async def list_sources(services: Services = Depends(get_services)) -> list[SourceInfo]:
+async def list_sources(
+    owner: str = Depends(proprietaire), services: Services = Depends(get_services)
+) -> list[SourceInfo]:
     return [
         SourceInfo(id=row["id"], filename=row["filename"], chunks=row["chunks"])
-        for row in services.journal.list_sources()
+        for row in services.journal.list_sources(owner)
     ]
 
 
 @router.delete("/sources/{source_id}")
-async def delete_source(source_id: str, services: Services = Depends(get_services)) -> dict:
+async def delete_source(
+    source_id: str,
+    owner: str = Depends(proprietaire),
+    services: Services = Depends(get_services),
+) -> dict:
+    if services.journal.source(owner, source_id) is None:
+        raise HTTPException(status_code=404, detail="Document introuvable.")
+
     try:
         await asyncio.to_thread(services.rag.delete, source_id)
     except RagUnavailable as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
-    # Le fichier déposé n'a plus d'utilité une fois l'index nettoyé.
     for fichier in services.settings.uploads_dir.glob(f"{source_id}.*"):
         fichier.unlink(missing_ok=True)
 
-    services.journal.delete_source(source_id)
+    services.journal.supprimer_source(owner, source_id)
     return {"ok": True}

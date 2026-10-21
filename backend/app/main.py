@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import artifacts, chat, health, sources, translate
+from app.api import artifacts, auth, chat, health, sources, translate
 from app.config import get_settings
 from app.services.container import get_services
 
@@ -48,12 +48,14 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(auth.router)
 app.include_router(chat.router)
 app.include_router(sources.router)
 app.include_router(artifacts.router)
 app.include_router(translate.router)
 
-app.mount("/artifacts", StaticFiles(directory=str(settings.artifacts_dir)), name="artifacts")
+# Les artefacts ne sont plus montés en statique : ils sont servis par une route
+# qui vérifie le propriétaire (api/artifacts.py).
 
 # Interface React (frontend/dist). En développement, Vite sert l'app et relaie
 # ces mêmes routes vers ce serveur : les chemins sont identiques dans les deux cas.

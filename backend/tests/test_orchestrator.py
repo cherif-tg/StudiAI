@@ -104,7 +104,7 @@ def test_aucun_artefact_n_est_cree_sans_action_explicite(tmp_path, monkeypatch):
     )
 
     assert resp.artifacts == []
-    assert services.journal.list_artifacts() == []
+    assert services.journal.list_artifacts("owner-test") == []
 
 
 def test_outil_en_echec_ne_casse_pas_la_reponse(tmp_path, monkeypatch):
