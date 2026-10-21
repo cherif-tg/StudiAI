@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
+import type { FormEvent } from "react";
 
 import { Icon } from "../Icon";
 import { Markdown } from "../Markdown";
-import type { ChatMessage } from "../../lib/types";
+import { api } from "../../lib/api";
+import type { AgentMode, AgentModeInfo, ChatMessage } from "../../lib/types";
 
 const SUGGESTIONS = [
   "Résume le document principal en 5 points",
   "Fais-moi un quiz de 5 questions",
-  "Quelles sont les idées clés du chapitre 2 ?",
+  "Explique-moi ce chapitre étape par étape",
 ];
 
 const LIBELLES_OUTILS: Record<string, string> = {
@@ -15,6 +17,34 @@ const LIBELLES_OUTILS: Record<string, string> = {
   summarize: "résumé",
   generate_quiz: "quiz",
 };
+
+/** Repli si le catalogue du serveur est indisponible : mêmes libellés. */
+const MODES_REPLI: AgentModeInfo[] = [
+  { id: "standard", label: "Standard", description: "Réponse directe, appuyée sur les passages." },
+  {
+    id: "socratique",
+    label: "Tuteur socratique",
+    description: "Guide par des questions, avec exemples et analogies.",
+  },
+  {
+    id: "reflexion",
+    label: "Réflexion",
+    description: "Décompose un problème complexe, montre le plan.",
+  },
+  { id: "precis", label: "Précis", description: "Court, factuel, chiffres et termes exacts." },
+];
+
+const CLE_MODE = "nunya.mode";
+
+function modeMemorise(): AgentMode {
+  try {
+    const valeur = localStorage.getItem(CLE_MODE);
+    if (valeur && MODES_REPLI.some((m) => m.id === valeur)) return valeur as AgentMode;
+  } catch {
+    /* stockage refusé */
+  }
+  return "standard";
+}
 
 export function ChatPane({
   messages,
@@ -27,15 +57,37 @@ export function ChatPane({
 }: {
   messages: ChatMessage[];
   envoi: boolean;
-  envoyer: (texte: string) => void;
+  envoyer: (texte: string, mode: AgentMode) => void;
   nouvelleSession: () => void;
   sourcesActives: number;
   nombreSources: number;
   onOuvrirAtelier: () => void;
 }) {
   const [brouillon, setBrouillon] = useState("");
+  const [modes, setModes] = useState<AgentModeInfo[]>(MODES_REPLI);
+  const [mode, setMode] = useState<AgentMode>(modeMemorise);
+  const [menuOuvert, setMenuOuvert] = useState(false);
+
   const zone = useRef<HTMLTextAreaElement>(null);
   const journal = useRef<HTMLDivElement>(null);
+  const selecteur = useRef<HTMLDivElement>(null);
+
+  const modeCourant = modes.find((element) => element.id === mode) ?? modes[0];
+
+  useEffect(() => {
+    let vivant = true;
+    api
+      .modes()
+      .then((catalogue) => {
+        if (vivant && catalogue.modes.length) setModes(catalogue.modes);
+      })
+      .catch(() => {
+        /* le repli local suffit : le serveur validera de son côté */
+      });
+    return () => {
+      vivant = false;
+    };
+  }, []);
 
   useEffect(() => {
     const element = journal.current;
@@ -49,11 +101,40 @@ export function ChatPane({
     element.style.height = `${Math.min(element.scrollHeight, 132)}px`;
   }, [brouillon]);
 
-  const soumettre = () => {
+  // Fermeture du menu : Échap, ou clic en dehors.
+  useEffect(() => {
+    if (!menuOuvert) return undefined;
+    const surTouche = (evenement: KeyboardEvent) => {
+      if (evenement.key === "Escape") setMenuOuvert(false);
+    };
+    const surClic = (evenement: MouseEvent) => {
+      if (!selecteur.current?.contains(evenement.target as Node)) setMenuOuvert(false);
+    };
+    document.addEventListener("keydown", surTouche);
+    document.addEventListener("mousedown", surClic);
+    return () => {
+      document.removeEventListener("keydown", surTouche);
+      document.removeEventListener("mousedown", surClic);
+    };
+  }, [menuOuvert]);
+
+  const choisirMode = (valeur: AgentMode) => {
+    setMode(valeur);
+    setMenuOuvert(false);
+    try {
+      localStorage.setItem(CLE_MODE, valeur);
+    } catch {
+      /* le choix ne survivra pas au rechargement */
+    }
+    zone.current?.focus();
+  };
+
+  const soumettre = (evenement?: FormEvent) => {
+    evenement?.preventDefault();
     const texte = brouillon.trim();
     if (!texte || envoi) return;
     setBrouillon("");
-    envoyer(texte);
+    envoyer(texte, mode);
   };
 
   return (
@@ -69,7 +150,7 @@ export function ChatPane({
           </span>
           <button className="btn btn--quiet btn--sm" onClick={nouvelleSession}>
             <Icon name="rafraichir" size={13} />
-            Nouvelle session
+            Nouvelle conversation
           </button>
         </div>
       </div>
@@ -94,7 +175,7 @@ export function ChatPane({
                       onOuvrirAtelier();
                       return;
                     }
-                    envoyer(suggestion);
+                    envoyer(suggestion, mode);
                   }}
                 >
                   {suggestion}
@@ -135,13 +216,7 @@ export function ChatPane({
       </div>
 
       <div className="pane__foot">
-        <form
-          className="composer"
-          onSubmit={(evenement) => {
-            evenement.preventDefault();
-            soumettre();
-          }}
-        >
+        <form className="composer" onSubmit={soumettre}>
           <label className="sr-only" htmlFor="question">
             Ta question
           </label>
@@ -150,9 +225,7 @@ export function ChatPane({
             ref={zone}
             rows={1}
             placeholder={
-              nombreSources
-                ? "Pose une question sur tes sources…"
-                : "Dépose d'abord un document…"
+              nombreSources ? "Pose une question sur tes sources…" : "Dépose d'abord un document…"
             }
             value={brouillon}
             onChange={(evenement) => setBrouillon(evenement.target.value)}
@@ -164,6 +237,37 @@ export function ChatPane({
             }}
             disabled={envoi}
           />
+
+          <div className="mode-picker" ref={selecteur}>
+            <button
+              type="button"
+              className="mode-btn"
+              aria-haspopup="listbox"
+              aria-expanded={menuOuvert}
+              onClick={() => setMenuOuvert((ouvert) => !ouvert)}
+              title={`Mode de réponse : ${modeCourant?.label}. Cliquer pour changer.`}
+            >
+              <Icon name="etincelle" size={14} />
+              <span className="mode-btn__label">{modeCourant?.label ?? "Standard"}</span>
+            </button>
+
+            {menuOuvert ? (
+              <ul className="mode-menu" role="listbox" aria-label="Mode de réponse">
+                {modes.map((element) => (
+                  <li key={element.id} role="option" aria-selected={element.id === mode}>
+                    <button type="button" onClick={() => choisirMode(element.id)}>
+                      <span className="mode-menu__label">
+                        {element.label}
+                        {element.id === mode ? <Icon name="coche" size={13} /> : null}
+                      </span>
+                      <span className="mode-menu__desc">{element.description}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+
           <button
             type="submit"
             className="btn btn--primary btn--icon"

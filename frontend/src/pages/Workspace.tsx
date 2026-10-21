@@ -9,7 +9,7 @@ import { useAppData } from "../context/AppDataProvider";
 import { useToast } from "../context/ToastProvider";
 import { ApiError, api } from "../lib/api";
 import { identifiant, titreDepuisMarkdown } from "../lib/format";
-import type { ChatMessage, Quiz, ToolStep } from "../lib/types";
+import type { AgentMode, ChatMessage, Quiz, ToolStep } from "../lib/types";
 
 function extraireEtape(etapes: ToolStep[], outil: string): ToolStep | undefined {
   return [...etapes].reverse().find((etape) => etape.tool === outil);
@@ -27,7 +27,7 @@ export function Workspace() {
   const [enregistrement, setEnregistrement] = useState(false);
 
   const envoyer = useCallback(
-    async (texte: string) => {
+    async (texte: string, mode: AgentMode) => {
       if (envoi) return;
 
       if (!sources.length) {
@@ -60,6 +60,7 @@ export function Workspace() {
           session_id: sessionId,
           message: texte,
           source_ids: selection,
+          mode,
         });
 
         setMessages((liste) =>
@@ -129,7 +130,7 @@ export function Workspace() {
         <ChatPane
           messages={messages}
           envoi={envoi}
-          envoyer={(texte) => void envoyer(texte)}
+          envoyer={(texte, mode) => void envoyer(texte, mode)}
           nouvelleSession={() => {
             nouvelleSession();
             setMessages([]);

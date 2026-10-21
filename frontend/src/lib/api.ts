@@ -1,4 +1,13 @@
-import type { Artifact, ArtifactKind, ChatResponse, Health, Source, User } from "./types";
+import type {
+  AgentMode,
+  AgentModeInfo,
+  Artifact,
+  ArtifactKind,
+  ChatResponse,
+  Health,
+  Source,
+  User,
+} from "./types";
 
 /** Erreur d'API lisible : le message est destiné à être affiché tel quel. */
 export class ApiError extends Error {
@@ -89,8 +98,15 @@ export const api = {
   deleteSource: (id: string) =>
     requete<{ ok: boolean }>(`/sources/${encodeURIComponent(id)}`, { method: "DELETE" }),
 
-  chat: (corps: { session_id: string; message: string; source_ids?: string[] | null }) =>
-    requete<ChatResponse>("/chat", { ...json(corps), timeoutMs: 180_000 }),
+  chat: (corps: {
+    session_id: string;
+    message: string;
+    source_ids?: string[] | null;
+    mode?: AgentMode;
+  }) => requete<ChatResponse>("/chat", { ...json(corps), timeoutMs: 180_000 }),
+
+  modes: () =>
+    requete<{ defaut: AgentMode; modes: AgentModeInfo[] }>("/agent/modes", { timeoutMs: 8_000 }),
 
   listArtifacts: () => requete<Artifact[]>("/artifacts"),
 

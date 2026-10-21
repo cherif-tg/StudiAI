@@ -41,6 +41,22 @@ document est bien indexé et **coché**, puis reformule avec les mots du cours.
 - Pour un support, demande explicitement : « fais-moi un résumé », « génère un
   quiz de 5 questions ».
 
+## Les modes de réponse
+
+Le bouton au bout de la zone de saisie change la **manière** dont l'agent répond. Il ne
+change pas ses règles : dans tous les modes, il répond uniquement à partir de tes
+documents, et n'enregistre rien sans ton clic.
+
+| Mode | Ce qu'il fait | Quand l'utiliser |
+|---|---|---|
+| **Standard** | Réponse directe, trois à six phrases | Question simple |
+| **Tuteur socratique** | Une question à la fois, exemples et analogies : c'est toi qui trouves la réponse | Comprendre une notion difficile |
+| **Réflexion** | Reformule, découpe en sous-questions, montre le plan et les limites | Problème complexe, plusieurs documents |
+| **Précis** | Une à trois phrases, termes et chiffres exacts, sans introduction | Vérifier une définition, une date |
+
+Le mode choisi est mémorisé sur ton appareil. Tu peux en changer au milieu d'une
+conversation : le changement s'applique au message suivant.
+
 ## Conversation et mémoire
 
 L'agent garde les derniers échanges en mémoire pour comprendre les reprises

@@ -115,10 +115,11 @@ Endpoints consommés (aucun autre) :
 | Méthode | Route | Usage |
 |---|---|---|
 | GET | `/health` | badge « Prêt / Moteur en préparation / LLM absent » |
+| GET | `/agent/modes` | catalogue des modes de réponse (libellé, description) |
 | GET | `/sources` | liste des documents |
 | POST | `/sources` | dépôt multipart, renvoie `chunks` |
 | DELETE | `/sources/{id}` | retrait du document **et** de son index |
-| POST | `/chat` | question → réponse + `steps` + artefacts vides |
+| POST | `/chat` | question → réponse + `steps` + artefacts vides (+ `mode`) |
 | GET | `/artifacts?session_id=` | carnet |
 | POST | `/artifacts` | enregistrement explicite (résumé ou quiz) |
 

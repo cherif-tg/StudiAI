@@ -55,6 +55,14 @@ export type Health = {
   llm: boolean;
 };
 
+export type AgentMode = "standard" | "socratique" | "reflexion" | "precis";
+
+export type AgentModeInfo = {
+  id: AgentMode;
+  label: string;
+  description: string;
+};
+
 export type User = {
   id: string;
   email: string;

@@ -6,6 +6,7 @@ La traduction et la persistance d'artefacts sont hors de cette boucle
 """
 from __future__ import annotations
 
+from app.agent.modes import consigne
 from app.schemas import ChatRequest, ChatResponse, ToolStep
 from app.services.container import Services
 from app.tools.base import ToolContext
@@ -28,7 +29,12 @@ _history: dict[str, list[dict]] = {}
 
 async def run_agent(services: Services, req: ChatRequest) -> ChatResponse:
     registry = get_registry()
-    messages = _history.setdefault(req.session_id, [{"role": "system", "content": SYSTEM}])
+
+    # Le mode choisi change la consigne système ; le socle (sources, outils,
+    # absence d'enregistrement automatique) reste identique.
+    systeme = SYSTEM + consigne(req.mode)
+    messages = _history.setdefault(req.session_id, [{"role": "system", "content": systeme}])
+    messages[0] = {"role": "system", "content": systeme}
     messages.append({"role": "user", "content": req.message})
 
     steps: list[ToolStep] = []

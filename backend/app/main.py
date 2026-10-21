@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import artifacts, auth, chat, health, sources, translate
+from app.api import agent, artifacts, auth, chat, health, sources, translate
 from app.config import get_settings
 from app.services.container import get_services
 
@@ -49,6 +49,7 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(agent.router)
 app.include_router(chat.router)
 app.include_router(sources.router)
 app.include_router(artifacts.router)

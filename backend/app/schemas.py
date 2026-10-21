@@ -4,6 +4,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 OutputLanguage = Literal["fr", "ee"]  # français, éwé
+AgentMode = Literal["standard", "socratique", "reflexion", "precis"]
 
 
 class ArtifactRef(BaseModel):
@@ -38,6 +39,7 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
     source_ids: list[str] | None = None  # None = toutes les sources
     output_language: OutputLanguage = "fr"
+    mode: AgentMode = "standard"
 
 
 class ChatResponse(BaseModel):
