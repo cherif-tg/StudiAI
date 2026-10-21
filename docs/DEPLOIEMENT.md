@@ -144,7 +144,50 @@ conseillé : deux sous-domaines du même domaine évitent tout le problème.
 Si la session ne survit pas à un rechargement, regarder dans l'ordre : l'origine
 exacte dans `CORS_ORIGINS`, l'attribut `SameSite` du cookie, puis le domaine.
 
-## 5. Sauvegarde et restauration
+## 5. Héberger l'API sur Hugging Face Spaces (gratuit)
+
+C'est l'option gratuite qui tient le RAG : un Space Docker dispose de 2 vCPU et
+**16 Go de RAM**, largement assez pour torch et le modèle.
+
+### Mise en place, une fois
+
+1. Sur huggingface.co → **New Space** → SDK **Docker** → template **Blank**.
+2. Noter l'URL du Space : `https://huggingface.co/spaces/<compte>/<nom>`.
+3. Depuis le dépôt :
+
+```powershell
+.\scripts\publier-space.ps1 -Space https://huggingface.co/spaces/<compte>/<nom>
+```
+
+Le script clone le Space, y copie `backend/app`, les `requirements`, le
+`Dockerfile` et le README de `deploy/huggingface/`, puis pousse. Le Space
+reconstruit son image (compter 10 à 20 minutes la première fois).
+
+4. Dans les réglages du Space → **Variables and secrets** :
+
+| Nom | Valeur |
+|---|---|
+| `GROQ_API_KEY` | la clé du fournisseur |
+| `CORS_ORIGINS` | l'URL exacte de l'interface Vercel |
+| `COOKIE_SAMESITE` | `none` (HTTPS, domaines différents) |
+| `TRUST_PROXY_HEADERS` | `true` |
+
+5. L'URL publique de l'API se trouve dans l'onglet **Embed this Space**. La
+   vérifier : `https://<url>/health` doit renvoyer `rag: true` une fois le
+   moteur chargé.
+
+### Ce qu'il faut accepter
+
+- **Disque éphémère** : comptes, documents et carnets disparaissent à chaque
+  redémarrage ou mise en veille. Pour une démonstration, on redépose un document.
+- **Veille** : le Space s'endort sans visite. Le premier appel réveille le
+  conteneur et recharge le modèle — ouvrir le lien quelques minutes avant.
+- **Code public** : un Space gratuit est public, y compris ses fichiers.
+
+Pour des données persistantes, il faut Oracle Always Free (disque de 200 Go,
+mais ARM et carte bancaire) ou un VPS à ~5 €/mois.
+
+## 6. Sauvegarde et restauration
 
 Tout l'état tient dans `data/` :
 
@@ -163,7 +206,7 @@ Compress-Archive -Path data -DestinationPath "sauvegarde-nunya-$(Get-Date -f yyy
 Restauration : décompresser au même endroit, redémarrer le serveur. Aucune
 migration n'est nécessaire.
 
-## 6. Checklist avant une démonstration
+## 7. Checklist avant une démonstration
 
 - [ ] `frontend/dist` reconstruit après la dernière modification (`npm run build`)
 - [ ] `.env` présent avec `GROQ_API_KEY`
