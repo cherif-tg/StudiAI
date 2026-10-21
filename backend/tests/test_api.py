@@ -210,3 +210,36 @@ def test_source_docx_valide_est_indexe(connecte, monkeypatch):
     assert r.status_code == 200
     assert r.json()["chunks"] == 4
     assert any(s["filename"] == "cours.docx" for s in connecte.get("/sources").json())
+
+
+# --- Cookie de session et déploiement séparé --------------------------------
+
+
+def _cookie_inscription(client):
+    r = client.post(
+        "/auth/register",
+        json={"name": "Cookie", "email": f"cookie-{uuid.uuid4().hex[:8]}@nunya.test",
+              "mot_de_passe": MOT_DE_PASSE},
+    )
+    assert r.status_code == 201, r.text
+    return r.headers.get("set-cookie", "")
+
+
+def test_cookie_httponly_et_lax_par_defaut(client):
+    cookie = _cookie_inscription(client).lower()
+
+    assert "httponly" in cookie
+    assert "samesite=lax" in cookie
+
+
+def test_cookie_cross_site_force_secure(client, settings):
+    """Sur deux domaines distincts, SameSite=None exige Secure même en HTTP local."""
+    from app.services.container import build_services, get_services
+
+    base = settings.model_copy(update={"cookie_samesite": "none"})
+    client.app.dependency_overrides[get_services] = lambda: build_services(base)
+
+    cookie = _cookie_inscription(client).lower()
+
+    assert "samesite=none" in cookie
+    assert "secure" in cookie

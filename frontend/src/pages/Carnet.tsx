@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { ArtifactGlyph, libelleForme } from "../components/ArtifactGlyph";
 import { Icon } from "../components/Icon";
+import { urlApi } from "../lib/api";
 import { useAppData } from "../context/AppDataProvider";
 import { useAuth } from "../context/AuthProvider";
 import { formatDateHeure } from "../lib/format";
@@ -119,14 +120,14 @@ export function Carnet() {
                 <div className="artefact__actions">
                   <a
                     className="btn btn--sm"
-                    href={artefact.url}
+                    href={urlApi(artefact.url)}
                     target="_blank"
                     rel="noreferrer noopener"
                   >
                     <Icon name="externe" size={13} />
                     Ouvrir
                   </a>
-                  <a className="btn btn--sm" href={artefact.url} download>
+                  <a className="btn btn--sm" href={urlApi(artefact.url)} download>
                     <Icon name="telecharger" size={13} />
                     Télécharger
                   </a>

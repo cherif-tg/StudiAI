@@ -22,6 +22,22 @@ export class ApiError extends Error {
 
 type RequestOptions = RequestInit & { timeoutMs?: number };
 
+/**
+ * Base de l'API. Vide quand FastAPI sert l'interface (même origine) ; renseignée
+ * via `VITE_API_BASE_URL` quand l'interface est hébergée ailleurs (Vercel).
+ */
+const BASE_API = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+
+function adresse(chemin: string): string {
+  if (/^https?:\/\//i.test(chemin)) return chemin;
+  return `${BASE_API}${chemin}`;
+}
+
+/** URL absolue d'une ressource servie par l'API (artefact, fichier téléchargeable). */
+export function urlApi(chemin: string): string {
+  return adresse(chemin);
+}
+
 async function detailDeLaReponse(res: Response): Promise<string> {
   try {
     const corps: unknown = await res.json();
@@ -44,7 +60,13 @@ async function requete<T>(chemin: string, options: RequestOptions = {}): Promise
   const minuterie = setTimeout(() => controleur.abort(), timeoutMs);
 
   try {
-    const res = await fetch(chemin, { credentials: "same-origin", ...init, signal: controleur.signal });
+    const res = await fetch(adresse(chemin), {
+      // "include" : indispensable quand l'interface et l'API sont sur deux
+      // origines distinctes, sans effet en même origine.
+      credentials: "include",
+      ...init,
+      signal: controleur.signal,
+    });
     if (!res.ok) throw new ApiError(await detailDeLaReponse(res), res.status);
     if (res.status === 204) return undefined as T;
     return (await res.json()) as T;

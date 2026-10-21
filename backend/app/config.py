@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     chat_rate_window_s: int = 600
     # Derrière cloudflared ou Caddy : faire confiance aux en-têtes d'adresse.
     trust_proxy_headers: bool = True
+
+    # --- Déploiement séparé (interface sur Vercel, API ailleurs) ---------
+    # "lax"   : interface et API sur le même domaine (app.exemple.tg + api.exemple.tg)
+    # "none"  : deux domaines différents (exige HTTPS, et peut être bloqué par
+    #           les navigateurs qui refusent les cookies tiers)
+    cookie_samesite: str = "lax"
+
     # LLM local (Ollama) : usage ponctuel / expérimentations hors-ligne, voir README.
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "gemma4:e4b"

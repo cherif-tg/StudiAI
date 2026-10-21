@@ -43,6 +43,9 @@ app = FastAPI(title=settings.app_name, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_list,
+    # Indispensable dès que l'interface est servie par un autre domaine : sans
+    # ce drapeau, le navigateur refuse d'envoyer le cookie de session.
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

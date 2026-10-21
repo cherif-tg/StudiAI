@@ -83,6 +83,67 @@ Sur un VPS (2 vCPU / 4 Go, ordre de 4–5 €/mois chez Hetzner ou équivalent) 
 `docs/ETAT_DU_PROJET.md` rappelle que le déploiement permanent n'est pas encore
 fait : c'est la prochaine étape après la validation visuelle.
 
+## 4. Déploiement séparé : interface sur Vercel, API ailleurs
+
+C'est l'architecture recommandée pour une mise en ligne durable. Elle suppose de
+régler **trois choses** correctement, sinon la connexion échoue silencieusement.
+
+### Pourquoi séparer
+
+Vercel héberge très bien une interface statique, mais pas ce backend : le RAG
+demande ~1 Go de RAM, un disque persistant pour Chroma et un processus qui reste
+allumé. Les fonctions serverless de Vercel n'offrent ni l'un ni l'autre.
+
+### 1. Dire à l'interface où est l'API
+
+Sur Vercel, le projet a pour racine `frontend/` et deux réglages :
+
+| Réglage | Valeur |
+|---|---|
+| Framework | Vite |
+| Variable d'environnement | `VITE_API_BASE_URL=https://api.exemple.tg` (sans slash final) |
+
+Le client préfixe toutes ses requêtes avec cette base, et les liens de
+téléchargement des artefacts aussi. Vide, l'interface appelle la même origine
+(cas « tout-en-un » servi par FastAPI).
+
+`frontend/vercel.json` fournit déjà la configuration de build, la réécriture SPA
+et le cache des assets.
+
+### 2. Autoriser l'origine dans l'API
+
+```
+CORS_ORIGINS=https://app.exemple.tg,https://nunya.vercel.app
+```
+
+Pas de `*` : avec `allow_credentials`, le navigateur refuse une origine générique.
+
+### 3. Le cookie de session — le point qui casse tout
+
+Le cookie est `HttpOnly` et porte le jeton de session. Deux cas :
+
+| Situation | Réglage | Conséquence |
+|---|---|---|
+| `app.exemple.tg` + `api.exemple.tg` | `COOKIE_SAMESITE=lax` | Même site : le cookie est envoyé normalement. **Recommandé.** |
+| `nunya.vercel.app` + `api.onrender.com` | `COOKIE_SAMESITE=none` | Domaines différents : cookie **tiers**, souvent bloqué (Safari, Chrome) → connexion qui « ne tient pas » |
+
+En mode `none`, le `Secure` est forcé : le cookie ne circulera qu'en HTTPS.
+C'est pour cette raison qu'un **nom de domaine** (10–20 €/an) est vivement
+conseillé : deux sous-domaines du même domaine évitent tout le problème.
+
+### Déroulé
+
+1. **Backend** : image Docker (`backend/Dockerfile`) sur un hôte avec volume
+   persistant (`/srv/data`), ≥ 2 Go de RAM. Renseigner `GROQ_API_KEY`,
+   `CORS_ORIGINS`, et `COOKIE_SAMESITE` selon le tableau ci-dessus.
+2. **Frontend** : importer le dépôt sur Vercel, racine `frontend/`, ajouter
+   `VITE_API_BASE_URL`, déployer.
+3. **Vérifier** : créer un compte depuis l'URL publique, recharger la page (la
+   session doit tenir), déposer un document, poser une question, ouvrir le carnet.
+
+Si la session ne survit pas à un rechargement, regarder dans l'ordre : l'origine
+exacte dans `CORS_ORIGINS`, l'attribut `SameSite` du cookie, puis le domaine.
+
 ## 5. Sauvegarde et restauration
 
 Tout l'état tient dans `data/` :

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from fastapi import Depends, HTTPException, Request, Response
 
+from app.config import Settings
 from app.services.auth import DUREE_SESSION_S, NOM_COOKIE, empreinte_jeton
 from app.services.container import Services, get_services
 
@@ -14,14 +15,25 @@ def _connexion_https(request: Request) -> bool:
     return transmis.split(",")[0].strip() == "https"
 
 
-def poser_cookie(request: Request, response: Response, jeton: str) -> None:
+def poser_cookie(request: Request, response: Response, jeton: str, settings: Settings) -> None:
+    """Pose le cookie de session, avec les bons attributs selon le déploiement.
+
+    - interface et API sur le même domaine : `SameSite=Lax` suffit ;
+    - domaines différents (Vercel + API ailleurs) : il faut `SameSite=None`,
+      que les navigateurs n'acceptent qu'en HTTPS — d'où le `Secure` forcé.
+    """
+    samesite = (settings.cookie_samesite or "lax").strip().lower()
+    if samesite not in {"lax", "strict", "none"}:
+        samesite = "lax"
+    secure = samesite == "none" or _connexion_https(request)
+
     response.set_cookie(
         key=NOM_COOKIE,
         value=jeton,
         max_age=DUREE_SESSION_S,
         httponly=True,
-        samesite="lax",
-        secure=_connexion_https(request),
+        samesite=samesite,
+        secure=secure,
         path="/",
     )
 

@@ -32,7 +32,7 @@ def _email_valide(email: str) -> str:
 def _ouvrir_session(services: Services, request: Request, response: Response, user_id: str) -> None:
     jeton, empreinte = nouveau_jeton()
     services.journal.creer_session(empreinte, user_id, time.time() + DUREE_SESSION_S)
-    poser_cookie(request, response, jeton)
+    poser_cookie(request, response, jeton, services.settings)
 
 
 @router.post("/auth/register", response_model=UserPublic, status_code=201)
