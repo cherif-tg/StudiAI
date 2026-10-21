@@ -23,6 +23,16 @@ class Settings(BaseSettings):
     # Préchauffage du RAG au démarrage (désactivable : tests, machine sans RAG).
     rag_warmup: bool = True
 
+    # --- Garde-fous d'exposition publique --------------------------------
+    # Refus au-delà de cette taille par fichier (le corps est lu par blocs).
+    max_upload_mb: int = 20
+    # Plafond global du dossier d'uploads, pour ne pas remplir le disque.
+    max_storage_mb: int = 500
+    # Fenêtre glissante sur /chat : protège le quota du fournisseur de modèle.
+    chat_rate_limit: int = 30
+    chat_rate_window_s: int = 600
+    # Derrière cloudflared ou Caddy : faire confiance aux en-têtes d'adresse.
+    trust_proxy_headers: bool = True
     # LLM local (Ollama) : usage ponctuel / expérimentations hors-ligne, voir README.
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "gemma4:e4b"
