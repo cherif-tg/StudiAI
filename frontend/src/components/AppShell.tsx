@@ -4,13 +4,8 @@ import type { ReactNode } from "react";
 import { Brand } from "./Brand";
 import { Icon } from "./Icon";
 import { StatusPill } from "./StatusPill";
+import { useAuth } from "../context/AuthProvider";
 import { useTheme } from "../context/ThemeProvider";
-
-const LIENS = [
-  { to: "/atelier", label: "Atelier" },
-  { to: "/carnet", label: "Carnet" },
-  { to: "/documentation", label: "Documentation" },
-];
 
 function BasculeTheme() {
   const { resolved, setPreference } = useTheme();
@@ -34,6 +29,9 @@ export function AppShell({
   children: ReactNode;
   variant?: "page" | "full";
 }) {
+  const { user, deconnecter } = useAuth();
+  const initiale = (user?.name || user?.email || "?").trim().charAt(0).toUpperCase();
+
   return (
     <>
       <a className="skip-link" href="#contenu">
@@ -45,28 +43,51 @@ export function AppShell({
         </Link>
 
         <nav className="nav" aria-label="Navigation principale">
-          {LIENS.map((lien) => (
-            <NavLink key={lien.to} to={lien.to}>
-              {lien.label}
-            </NavLink>
-          ))}
+          {user ? (
+            <>
+              <NavLink to="/atelier">Atelier</NavLink>
+              <NavLink to="/carnet">Carnet</NavLink>
+            </>
+          ) : null}
+          <NavLink to="/documentation">Documentation</NavLink>
         </nav>
 
         <div className="topbar__end">
           <StatusPill />
           <BasculeTheme />
-          <NavLink
-            to="/reglages"
-            className="btn btn--quiet btn--icon"
-            aria-label="Réglages"
-            title="Réglages"
-          >
-            <Icon name="reglages" size={17} />
-          </NavLink>
+
+          {user ? (
+            <>
+              <NavLink
+                to="/reglages"
+                className="btn btn--quiet btn--icon"
+                aria-label="Réglages"
+                title="Réglages"
+              >
+                <Icon name="reglages" size={17} />
+              </NavLink>
+              <span className="avatar" title={user.email} aria-hidden="true">
+                {initiale}
+              </span>
+              <button
+                className="btn btn--quiet btn--sm"
+                onClick={() => void deconnecter()}
+                title="Se déconnecter"
+              >
+                Quitter
+              </button>
+            </>
+          ) : (
+            <NavLink to="/connexion" className="btn btn--sm">
+              Se connecter
+            </NavLink>
+          )}
         </div>
       </header>
 
-      <main id="contenu" data-variant={variant}>{children}</main>
+      <main id="contenu" data-variant={variant}>
+        {children}
+      </main>
     </>
   );
 }

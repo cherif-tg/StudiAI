@@ -5,12 +5,14 @@ import { AppShell } from "../components/AppShell";
 import { ArtifactGlyph, libelleForme } from "../components/ArtifactGlyph";
 import { Icon } from "../components/Icon";
 import { useAppData } from "../context/AppDataProvider";
+import { useAuth } from "../context/AuthProvider";
 import { formatDateHeure } from "../lib/format";
 
 type Filtre = "tous" | "summary" | "quiz";
 
 export function Carnet() {
-  const { artefacts, artefactsEtat, rafraichirArtefacts, sessionId, nouvelleSession } = useAppData();
+  const { artefacts, artefactsEtat, rafraichirArtefacts } = useAppData();
+  const { user } = useAuth();
   const [filtre, setFiltre] = useState<Filtre>("tous");
 
   const liste = useMemo(() => {
@@ -135,10 +137,8 @@ export function Carnet() {
         ) : null}
 
         <p className="hint" style={{ marginTop: "var(--sp-6)" }}>
-          Session <span className="mono">{sessionId.slice(0, 8)}</span> ·{" "}
-          <button className="btn btn--quiet btn--sm" onClick={nouvelleSession}>
-            Démarrer une nouvelle session
-          </button>
+          Carnet de <span className="mono">{user?.email}</span> — chaque entrée est liée à ton
+          compte, pas à cet appareil.
         </p>
       </div>
     </AppShell>

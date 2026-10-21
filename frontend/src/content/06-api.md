@@ -3,9 +3,23 @@
 Toutes les routes sont servies par le même serveur que l'interface. Les corps sont
 en JSON, sauf le dépôt de fichier qui utilise `multipart/form-data`.
 
-> **Pas d'authentification dans cette version.** L'API est ouverte à qui atteint
-> le serveur. Les garde-fous limitent la taille des fichiers, le volume total et
-> le débit des questions — ils ne remplacent pas un contrôle d'accès.
+## Authentification
+
+Les routes de l'atelier exigent un compte. La session est un cookie
+`nunya_session` (`httpOnly`, `SameSite=Lax`, 30 jours), posé par :
+
+| Méthode | Chemin | Corps | Effet |
+|---|---|---|---|
+| `POST` | `/auth/register` | `{name, email, mot_de_passe}` | Crée le compte, ouvre la session (`201`) |
+| `POST` | `/auth/login` | `{email, mot_de_passe}` | Ouvre la session |
+| `POST` | `/auth/logout` | — | Ferme la session (`204`) |
+| `GET` | `/auth/me` | — | Profil courant, `401` si non connecté |
+
+Le cookie contient un jeton opaque ; seul son empreinte SHA-256 est stockée côté
+serveur. Les mots de passe sont hachés avec `scrypt` et un sel par compte.
+
+Les routes publiques restent : `/health`, `/`, la documentation et les fichiers
+statiques de l'interface.
 
 ## Routes
 
@@ -16,8 +30,9 @@ en JSON, sauf le dépôt de fichier qui utilise `multipart/form-data`.
 | `POST` | `/sources` | Dépose et indexe un document (`multipart`, champ `file`) |
 | `DELETE` | `/sources/{id}` | Retire un document et son index |
 | `POST` | `/chat` | Question à l'agent |
-| `GET` | `/artifacts?session_id=…` | Artefacts d'une session |
-| `POST` | `/artifacts` | Enregistre un artefact (résumé ou quiz) |
+| `GET` | `/artifacts` | Artefacts du compte connecté |
+| `POST` | `/artifacts` | Enregistre un artefact (`kind`, `title`, `content`) |
+| `GET` | `/artifacts/{fichier}` | Sert un artefact après contrôle du propriétaire |
 | `POST` | `/translate` | Traduction éwé (désactivée dans le MVP) |
 | `GET` | `/docs` | Documentation interactive générée par FastAPI |
 
@@ -59,7 +74,11 @@ appelés — utile pour vérifier qu'une réponse s'appuie sur les documents.
 | Code | Sens | Message typique |
 |---|---|---|
 | `400` | Document illisible ou format non supporté | « Aucun texte exploitable dans ce document (PDF scanné ?) » |
+| `401` | Pas de session valide | « Connecte-toi pour accéder à l'atelier. » |
+| `403` | Source appartenant à un autre compte | « Une source demandée n'appartient pas à ton compte. » |
+| `409` | Adresse déjà utilisée | « Un compte existe déjà avec cette adresse. » |
 | `413` | Fichier trop volumineux | « maximum 20 Mo » |
+| `422` | Adresse ou mot de passe invalide | « Adresse e-mail invalide. » |
 | `429` | Trop de questions dans la fenêtre | en-tête `Retry-After` fourni |
 | `503` | Clé LLM absente, traduction désactivée, RAG indisponible | « GROQ_API_KEY manquant » |
 | `507` | Stockage plein | « Retire un document avant d'en déposer un nouveau » |

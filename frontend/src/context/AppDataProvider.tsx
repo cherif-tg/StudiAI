@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 import { ApiError, api } from "../lib/api";
 import { identifiant } from "../lib/format";
 import type { Artifact, ArtifactKind, Health, Source } from "../lib/types";
+import { useAuth } from "./AuthProvider";
 import { useToast } from "./ToastProvider";
 
 type Etat = "loading" | "ready" | "error";
@@ -60,6 +61,7 @@ function sessionInitiale(): string {
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const { push } = useToast();
+  const { user } = useAuth();
   const [sessionId, setSessionId] = useState<string>(sessionInitiale);
 
   const [sources, setSources] = useState<Source[]>([]);
@@ -95,19 +97,28 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const rafraichirArtefacts = useCallback(async () => {
+    if (!user) {
+      setArtefacts([]);
+      return;
+    }
     setArtefactsEtat("loading");
     try {
-      const liste = await api.listArtifacts(sessionId);
+      const liste = await api.listArtifacts();
       setArtefacts(liste);
       setArtefactsEtat("ready");
     } catch {
       setArtefactsEtat("error");
     }
-  }, [sessionId]);
+  }, [user]);
 
   useEffect(() => {
+    if (!user) {
+      setSources([]);
+      setSourcesEtat("ready");
+      return;
+    }
     void rafraichirSources();
-  }, [rafraichirSources]);
+  }, [user, rafraichirSources]);
 
   useEffect(() => {
     void rafraichirArtefacts();
@@ -202,7 +213,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     async (kind: ArtifactKind, titre: string, contenu: string) => {
       try {
         const cree = await api.createArtifact({
-          session_id: sessionId,
           kind,
           title: titre,
           content: contenu,
@@ -218,7 +228,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         return null;
       }
     },
-    [push, sessionId],
+    [push],
   );
 
   const nouvelleSession = useCallback(() => {
@@ -229,9 +239,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       /* sans stockage, la session reste en mémoire */
     }
     setSessionId(id);
-    setArtefacts([]);
-    setArtefactsEtat("ready");
-    push("Nouvelle session", { message: "Les documents restent disponibles.", tone: "info" });
+    push("Nouvelle conversation", {
+      message: "Ton carnet et tes documents restent inchangés.",
+      tone: "info",
+    });
   }, [push]);
 
   const valeur = useMemo<AppDataValue>(

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { Icon } from "../components/Icon";
 import { useAppData } from "../context/AppDataProvider";
+import { useAuth } from "../context/AuthProvider";
 import { useTheme } from "../context/ThemeProvider";
 import type { ThemePreference } from "../context/ThemeProvider";
 import { useToast } from "../context/ToastProvider";
@@ -12,7 +13,7 @@ import { api } from "../lib/api";
 const SECTIONS = [
   { id: "apparence", label: "Apparence" },
   { id: "langue", label: "Langue" },
-  { id: "session", label: "Session" },
+  { id: "compte", label: "Compte" },
   { id: "documents", label: "Documents" },
   { id: "moteur", label: "Moteur" },
   { id: "apropos", label: "À propos" },
@@ -20,21 +21,12 @@ const SECTIONS = [
 
 export function Settings() {
   const { preference, setPreference } = useTheme();
+  const { user, deconnecter } = useAuth();
   const { sessionId, nouvelleSession, sources, artefacts, sante } = useAppData();
   const { push } = useToast();
   const [verification, setVerification] = useState(false);
 
-  const copierSession = async () => {
-    try {
-      await navigator.clipboard.writeText(sessionId);
-      push("Identifiant copié", { tone: "success" });
-    } catch {
-      push("Copie impossible", {
-        message: `Ton identifiant : ${sessionId}`,
-        tone: "error",
-      });
-    }
-  };
+
 
   const verifierMoteur = async () => {
     setVerification(true);
@@ -128,27 +120,30 @@ export function Settings() {
               </div>
             </section>
 
-            <section className="card card--pad settings-section" id="session" style={{ marginTop: 16 }}>
-              <h2 style={{ fontFamily: "var(--font-ui)", fontSize: "var(--text-lg)" }}>Session</h2>
+            <section className="card card--pad settings-section" id="compte" style={{ marginTop: 16 }}>
+              <h2 style={{ fontFamily: "var(--font-ui)", fontSize: "var(--text-lg)" }}>Compte</h2>
               <div className="settings-row">
                 <div className="settings-row__label">
-                  <strong>Identifiant</strong>
-                  <span className="mono">{sessionId}</span>
+                  <strong>{user?.name || "Compte"}</strong>
+                  <span className="mono">{user?.email}</span>
                 </div>
-                <div className="row gap-2">
-                  <button className="btn btn--sm" onClick={() => void copierSession()}>
-                    <Icon name="cle" size={13} />
-                    Copier
-                  </button>
-                  <button className="btn btn--sm" onClick={nouvelleSession}>
-                    <Icon name="rafraichir" size={13} />
-                    Nouvelle session
-                  </button>
-                </div>
+                <button className="btn btn--sm" onClick={() => void deconnecter()}>
+                  Se déconnecter
+                </button>
               </div>
               <div className="settings-row">
                 <div className="settings-row__label">
-                  <strong>Contenu de la session</strong>
+                  <strong>Conversation en cours</strong>
+                  <span className="mono">{sessionId.slice(0, 8)}</span>
+                </div>
+                <button className="btn btn--sm" onClick={nouvelleSession}>
+                  <Icon name="rafraichir" size={13} />
+                  Nouvelle conversation
+                </button>
+              </div>
+              <div className="settings-row">
+                <div className="settings-row__label">
+                  <strong>Contenu du compte</strong>
                   <span>
                     {sources.length} document{sources.length > 1 ? "s" : ""} · {artefacts.length}{" "}
                     artefact{artefacts.length > 1 ? "s" : ""}
@@ -159,8 +154,8 @@ export function Settings() {
                 </Link>
               </div>
               <p className="hint" style={{ marginTop: 8 }}>
-                Les documents sont partagés par l'atelier ; les artefacts sont rattachés à cette
-                session. Une nouvelle session repart avec un carnet vide.
+                Les documents et le carnet sont liés à ton compte. Une nouvelle conversation
+                repart d'un historique vide, sans toucher au carnet.
               </p>
             </section>
 

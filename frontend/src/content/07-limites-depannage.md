@@ -9,7 +9,8 @@
 | Fiche bilingue | Désactivée | Dépend de la traduction |
 | Graphiques | Désactivés | Les gabarits ne sont pas branchés |
 | Export PDF / Word | Désactivé | Prévu après stabilisation du carnet |
-| Comptes utilisateurs | Absents | L'authentification arrive avec le déploiement |
+| Comptes utilisateurs | Présents | Inscription, connexion, session de 30 jours |
+| Réinitialisation du mot de passe | Absente | Pas d'envoi d'e-mail dans cette version ; créer un nouveau compte |
 | Suivi par notion, scores | Absents | Hors périmètre MVP |
 | Historique de discussion | Volatile | Conservé en mémoire, perdu au redémarrage |
 
@@ -32,7 +33,6 @@ Le backend n'est pas démarré, ou il écoute sur un autre port. Vérifie
 `http://127.0.0.1:8000/health` dans un navigateur.
 
 ### Le badge reste sur « Moteur en préparation »
-
 Le modèle se charge encore. Laisse le serveur tranquille : tuer le processus
 pendant le chargement fait perdre le travail et recommence au démarrage suivant.
 Regarde la sortie du serveur, elle indique l'avancement.
@@ -41,6 +41,17 @@ Regarde la sortie du serveur, elle indique l'avancement.
 
 La clé est absente du fichier `.env` à la racine du projet. La recherche
 documentaire continue de fonctionner, mais aucune réponse ne peut être rédigée.
+
+### Mot de passe oublié
+
+Il n'y a pas encore de réinitialisation par e-mail. Contacte l'administrateur de
+l'instance, ou crée un nouveau compte : les documents d'un compte ne sont pas
+accessibles depuis un autre.
+
+### « Connecte-toi pour accéder à l'atelier »
+
+La session a expiré (30 jours) ou le cookie a été effacé. Reconnecte-toi : tes
+documents et ton carnet sont toujours là.
 
 ### Un document n'est pas indexé
 

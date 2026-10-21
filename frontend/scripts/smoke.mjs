@@ -22,9 +22,15 @@ consoleVirtuelle.on("error", (...arguments_) => erreurs.push(arguments_.join(" "
 
 const reponses = {
   "/health": { status: "ok", rag: true, llm: true },
+  "/auth/me": { id: "u-smoke", email: "smoke@nunya.test", name: "Smoke" },
   "/sources": [{ id: "src-smoke", filename: "cours-exemple.docx", chunks: 7 }],
   "/artifacts": [],
 };
+
+// SMOKE_ANONYME=1 : aucun compte, pour vérifier la redirection vers /connexion.
+if (process.env.SMOKE_ANONYME === "1") {
+  delete reponses["/auth/me"];
+}
 
 const code = readFileSync(new URL("../dist-smoke/app.js", import.meta.url), "utf8");
 

@@ -285,6 +285,9 @@
 .workspace {
   display: grid;
   grid-template-columns: 278px minmax(0, 1fr) 392px;
+  /* Sans cette déclaration, les `grid-area` des volets pointent vers des zones
+     inexistantes et les trois panneaux s'empilent dans un seul bloc. */
+  grid-template-areas: "sources chat atelier";
   gap: 14px;
   padding: 14px var(--sp-4) var(--sp-4);
   height: calc(100vh - var(--topbar));

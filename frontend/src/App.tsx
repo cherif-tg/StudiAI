@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 
+import { RequireAuth } from "./components/RequireAuth";
 import { AppDataProvider } from "./context/AppDataProvider";
+import { AuthProvider } from "./context/AuthProvider";
 import { ThemeProvider } from "./context/ThemeProvider";
 import { ToastProvider } from "./context/ToastProvider";
 import { Auth } from "./pages/Auth";
@@ -25,21 +27,44 @@ export function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <AppDataProvider>
-          <BrowserRouter>
-            <RetourEnHaut />
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/connexion" element={<Auth />} />
-              <Route path="/atelier" element={<Workspace />} />
-              <Route path="/carnet" element={<Carnet />} />
-              <Route path="/reglages" element={<Settings />} />
-              <Route path="/documentation" element={<Documentation />} />
-              <Route path="/aide" element={<Help />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </AppDataProvider>
+        <AuthProvider>
+          <AppDataProvider>
+            <BrowserRouter>
+              <RetourEnHaut />
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/connexion" element={<Auth />} />
+                <Route
+                  path="/atelier"
+                  element={
+                    <RequireAuth>
+                      <Workspace />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/carnet"
+                  element={
+                    <RequireAuth>
+                      <Carnet />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/reglages"
+                  element={
+                    <RequireAuth>
+                      <Settings />
+                    </RequireAuth>
+                  }
+                />
+                <Route path="/documentation" element={<Documentation />} />
+                <Route path="/aide" element={<Help />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AppDataProvider>
+        </AuthProvider>
       </ToastProvider>
     </ThemeProvider>
   );

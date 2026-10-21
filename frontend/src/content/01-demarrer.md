@@ -8,29 +8,34 @@ dans ton carnet.
 ## Ce dont tu as besoin
 
 - Un navigateur récent (Chrome, Firefox, Edge, Safari).
+- Un compte : une adresse e-mail et un mot de passe de 8 caractères minimum.
 - Des cours au format **PDF** (avec du texte sélectionnable) ou **Word (.docx)**.
-- Rien d'autre : aucune inscription n'est demandée.
+
+Chaque compte a ses propres documents et son propre carnet. Rien n'est partagé
+entre deux personnes.
 
 ## Premier parcours, en trois minutes
 
-1. Ouvre l'**Atelier**.
-2. Dans le volet de gauche, clique sur **Ajouter** et choisis un fichier. Attends
+1. Crée ton compte depuis la page **Connexion**. Aucune confirmation par e-mail
+   n'est demandée dans cette version.
+2. Ouvre l'**Atelier**.
+3. Dans le volet de gauche, clique sur **Ajouter** et choisis un fichier. Attends
    que la mention « Indexé » apparaisse sous le document.
-3. Pose une question dans la zone de discussion, par exemple
+4. Pose une question dans la zone de discussion, par exemple
    « Quels sont les trois points principaux de ce chapitre ? ».
-4. Si tu veux un support, demande « fais-moi un résumé » ou « génère un quiz de
+5. Si tu veux un support, demande « fais-moi un résumé » ou « génère un quiz de
    5 questions ». Le résultat s'affiche dans l'**Atelier**, à droite.
-5. Clique sur **Ajouter au Carnet** si tu veux le conserver.
+6. Clique sur **Ajouter au Carnet** si tu veux le conserver.
 
-## La session
+## Ta session
 
-Ta session est identifiée par un code stocké dans ton navigateur. Tu la retrouves
-dans **Réglages → Session**, où tu peux la copier.
+Une fois connecté, tu restes reconnu pendant 30 jours sur cet appareil. Le bouton
+**Quitter**, en haut à droite, ferme la session immédiatement.
 
-- Les **documents** sont partagés par l'atelier : ils restent disponibles d'une
-  session à l'autre.
-- Les **artefacts** du carnet sont rattachés à la session. Démarrer une nouvelle
-  session repart avec un carnet vide.
+- Les **documents** et le **carnet** sont liés au compte : tu les retrouves depuis
+  n'importe quel appareil.
+- Une **nouvelle conversation** (dans les réglages) repart d'un historique vide,
+  sans toucher aux documents ni au carnet.
 
 ## Le badge d'état, en haut à droite
 

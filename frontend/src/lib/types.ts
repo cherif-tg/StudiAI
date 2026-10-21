@@ -55,6 +55,12 @@ export type Health = {
   llm: boolean;
 };
 
+export type User = {
+  id: string;
+  email: string;
+  name?: string | null;
+};
+
 export type ChatMessage = {
   id: string;
   role: "me" | "agent";

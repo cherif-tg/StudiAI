@@ -4,6 +4,7 @@ import { AppShell } from "../components/AppShell";
 import { ArtifactGlyph } from "../components/ArtifactGlyph";
 import { Icon } from "../components/Icon";
 import { Mark } from "../components/Brand";
+import { useAuth } from "../context/AuthProvider";
 
 const ATOUTS = [
   {
@@ -47,6 +48,10 @@ const ETAPES = [
 ];
 
 export function Landing() {
+  const { user } = useAuth();
+  const destination = user ? "/atelier" : "/connexion";
+  const libelle = user ? "Ouvrir l'atelier" : "Créer un compte";
+
   return (
     <AppShell>
       <div className="landing">
@@ -64,18 +69,18 @@ export function Landing() {
             </p>
 
             <div className="hero__actions">
-              <Link to="/atelier" className="btn btn--primary btn--lg">
-                Ouvrir l'atelier
+              <Link to={destination} className="btn btn--primary btn--lg">
+                {libelle}
                 <Icon name="fleche" size={17} />
               </Link>
-              <Link to="/aide" className="btn btn--lg">
+              <Link to="/documentation" className="btn btn--lg">
                 Comment ça marche
               </Link>
             </div>
 
             <div className="hero__meta">
               <span className="row gap-2">
-                <Icon name="cle" size={15} /> Documents privés à ta session
+                <Icon name="cle" size={15} /> Documents privés à ton compte
               </span>
               <span className="row gap-2">
                 <Icon name="coche" size={15} /> Réponses traçables
@@ -199,11 +204,12 @@ export function Landing() {
             <div>
               <h2 style={{ fontSize: "var(--text-2xl)" }}>Un cours à réviser ce soir ?</h2>
               <p className="muted" style={{ marginTop: 6 }}>
-                L'atelier est ouvert. Aucune inscription : ta session reste sur ton appareil.
+                Le compte est gratuit et prend dix secondes. Ton carnet te suit ensuite d'un
+                appareil à l'autre.
               </p>
             </div>
-            <Link to="/atelier" className="btn btn--primary btn--lg">
-              Commencer maintenant
+            <Link to={destination} className="btn btn--primary btn--lg">
+              {user ? "Reprendre l'atelier" : "Commencer maintenant"}
               <Icon name="fleche" size={17} />
             </Link>
           </div>

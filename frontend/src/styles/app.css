@@ -481,6 +481,34 @@
   gap: var(--sp-2);
 }
 
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding-left: var(--sp-2);
+  border-left: 1px solid var(--line);
+}
+
+@media (max-width: 720px) {
+  .avatar,
+  .topbar__end .btn--quiet.btn--sm {
+    display: none;
+  }
+}
+
 /* --- Mise en page ------------------------------------------------------- */
 .page {
   width: 100%;

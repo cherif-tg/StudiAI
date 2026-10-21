@@ -1,4 +1,4 @@
-import type { Artifact, ArtifactKind, ChatResponse, Health, Source } from "./types";
+import type { Artifact, ArtifactKind, ChatResponse, Health, Source, User } from "./types";
 
 /** Erreur d'API lisible : le message est destiné à être affiché tel quel. */
 export class ApiError extends Error {
@@ -35,7 +35,7 @@ async function requete<T>(chemin: string, options: RequestOptions = {}): Promise
   const minuterie = setTimeout(() => controleur.abort(), timeoutMs);
 
   try {
-    const res = await fetch(chemin, { ...init, signal: controleur.signal });
+    const res = await fetch(chemin, { credentials: "same-origin", ...init, signal: controleur.signal });
     if (!res.ok) throw new ApiError(await detailDeLaReponse(res), res.status);
     if (res.status === 204) return undefined as T;
     return (await res.json()) as T;
@@ -62,6 +62,17 @@ const json = (corps: unknown): RequestInit => ({
 export const api = {
   health: () => requete<Health>("/health", { timeoutMs: 6_000 }),
 
+  // --- Comptes ---------------------------------------------------------
+  moi: () => requete<User>("/auth/me", { timeoutMs: 8_000 }),
+
+  inscrire: (corps: { name: string; email: string; mot_de_passe: string }) =>
+    requete<User>("/auth/register", json(corps)),
+
+  connecter: (corps: { email: string; mot_de_passe: string }) =>
+    requete<User>("/auth/login", json(corps)),
+
+  deconnecter: () => requete<void>("/auth/logout", { method: "POST" }),
+
   listSources: () => requete<Source[]>("/sources"),
 
   uploadSource: async (fichier: File): Promise<Source> => {
@@ -81,15 +92,10 @@ export const api = {
   chat: (corps: { session_id: string; message: string; source_ids?: string[] | null }) =>
     requete<ChatResponse>("/chat", { ...json(corps), timeoutMs: 180_000 }),
 
-  listArtifacts: (sessionId: string) =>
-    requete<Artifact[]>(`/artifacts?session_id=${encodeURIComponent(sessionId)}`),
+  listArtifacts: () => requete<Artifact[]>("/artifacts"),
 
-  createArtifact: (corps: {
-    session_id: string;
-    kind: ArtifactKind;
-    title: string;
-    content: string;
-  }) => requete<Artifact>("/artifacts", json(corps)),
+  createArtifact: (corps: { kind: ArtifactKind; title: string; content: string }) =>
+    requete<Artifact>("/artifacts", json(corps)),
 
   translate: (texte: string) =>
     requete<{ translation: string; target: string }>(
