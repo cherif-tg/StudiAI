@@ -83,7 +83,7 @@ Sur un VPS (2 vCPU / 4 Go, ordre de 4–5 €/mois chez Hetzner ou équivalent) 
 `docs/ETAT_DU_PROJET.md` rappelle que le déploiement permanent n'est pas encore
 fait : c'est la prochaine étape après la validation visuelle.
 
-## 4. Déploiement séparé : interface sur Vercel, API ailleurs
+## 5. Déploiement séparé : interface sur Vercel, API ailleurs
 
 C'est l'architecture recommandée pour une mise en ligne durable. Elle suppose de
 régler **trois choses** correctement, sinon la connexion échoue silencieusement.
@@ -118,6 +118,28 @@ CORS_ORIGINS=https://app.exemple.tg,https://nunya.vercel.app
 
 Pas de `*` : avec `allow_credentials`, le navigateur refuse une origine générique.
 
+### 3. Variables à transmettre
+
+Côté API (`.env` du serveur) :
+
+| Variable | Rôle |
+|---|---|
+| `GROQ_API_KEY` | génération de texte |
+| `CORS_ORIGINS` | origine exacte de l'interface |
+| `COOKIE_SAMESITE` | `lax` (domaine commun) ou `none` (domaines séparés) |
+| `APP_PUBLIC_URL` | adresse publique, pour le lien de réinitialisation |
+| `SMTP_HOST`… | envoi des e-mails ; sans lui, le lien est écrit dans le journal |
+| `CONTACT_DESTINATAIRE` | adresse qui reçoit le formulaire de contact |
+
+Côté interface (Vercel) :
+
+| Variable | Rôle |
+|---|---|
+| `VITE_API_BASE_URL` | adresse de l'API, sans slash final |
+| `VITE_CONTACT_ENDPOINT` | `/contact` (ou une URL absolue) pour le formulaire |
+| `VITE_CONTACT_EMAIL` | repli : ouvre la messagerie si aucun endpoint |
+| `VITE_EDITEUR_NOM`, `VITE_HEBERGEUR_NOM` | mentions des pages légales |
+
 ### 3. Le cookie de session — le point qui casse tout
 
 Le cookie est `HttpOnly` et porte le jeton de session. Deux cas :
@@ -144,7 +166,7 @@ conseillé : deux sous-domaines du même domaine évitent tout le problème.
 Si la session ne survit pas à un rechargement, regarder dans l'ordre : l'origine
 exacte dans `CORS_ORIGINS`, l'attribut `SameSite` du cookie, puis le domaine.
 
-## 5. Héberger l'API sur Hugging Face Spaces (gratuit)
+## 6. Héberger l'API sur Hugging Face Spaces (gratuit)
 
 C'est l'option gratuite qui tient le RAG : un Space Docker dispose de 2 vCPU et
 **16 Go de RAM**, largement assez pour torch et le modèle.
@@ -187,7 +209,7 @@ reconstruit son image (compter 10 à 20 minutes la première fois).
 Pour des données persistantes, il faut Oracle Always Free (disque de 200 Go,
 mais ARM et carte bancaire) ou un VPS à ~5 €/mois.
 
-## 6. Sauvegarde et restauration
+## 7. Sauvegarde et restauration
 
 Tout l'état tient dans `data/` :
 
@@ -206,7 +228,7 @@ Compress-Archive -Path data -DestinationPath "sauvegarde-nunya-$(Get-Date -f yyy
 Restauration : décompresser au même endroit, redémarrer le serveur. Aucune
 migration n'est nécessaire.
 
-## 7. Checklist avant une démonstration
+## 8. Checklist avant une démonstration
 
 - [ ] `frontend/dist` reconstruit après la dernière modification (`npm run build`)
 - [ ] `.env` présent avec `GROQ_API_KEY`

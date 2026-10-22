@@ -4,6 +4,7 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { AppShell } from "../components/AppShell";
 import { Brand } from "../components/Brand";
+import { ChampMotDePasse } from "../components/ChampMotDePasse";
 import { Icon } from "../components/Icon";
 import { useAuth } from "../context/AuthProvider";
 import { ApiError } from "../lib/api";
@@ -17,6 +18,7 @@ export function Auth() {
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  const [accepte, setAccepte] = useState(false);
 
   const { user, connecter, inscrire } = useAuth();
   const navigate = useNavigate();
@@ -40,6 +42,12 @@ export function Auth() {
     }
     if (mode === "inscription" && nom.trim().length < 2) {
       setErreur("Indique un prénom ou un nom, même court.");
+      return;
+    }
+    if (mode === "inscription" && !accepte) {
+      setErreur(
+        "Pour créer ton compte, accepte les Conditions d'utilisation et la Politique de confidentialité.",
+      );
       return;
     }
 
@@ -157,13 +165,19 @@ export function Auth() {
               </div>
 
               <div className="field">
-                <label className="label" htmlFor="mot-de-passe">
-                  Mot de passe
-                </label>
-                <input
+                <div className="label-row">
+                  <label className="label" htmlFor="mot-de-passe">
+                    Mot de passe
+                  </label>
+                  {mode === "connexion" ? (
+                    <Link to="/mot-de-passe-oublie" className="label-link">
+                      Mot de passe oublié ?
+                    </Link>
+                  ) : null}
+                </div>
+                <ChampMotDePasse
                   id="mot-de-passe"
-                  className="input"
-                  type="password"
+                  autoComplete={mode === "inscription" ? "new-password" : "current-password"}
                   placeholder={mode === "inscription" ? "8 caractères minimum" : "Votre mot de passe"}
                   value={motDePasse}
                   onChange={(evenement) => setMotDePasse(evenement.target.value)}
@@ -172,6 +186,32 @@ export function Auth() {
                   <span className="hint">8 caractères minimum. Aucune règle de composition imposée.</span>
                 ) : null}
               </div>
+
+              {mode === "inscription" ? (
+                <label className="consent" htmlFor="consentement">
+                  <input
+                    id="consentement"
+                    type="checkbox"
+                    required
+                    checked={accepte}
+                    onChange={(evenement) => setAccepte(evenement.target.checked)}
+                  />
+                  <span className="consent__box" aria-hidden="true">
+                    <Icon name="coche" size={12} strokeWidth={2.6} />
+                  </span>
+                  <span>
+                    J'accepte les{" "}
+                    <Link to="/conditions" target="_blank" rel="noopener">
+                      Conditions d'utilisation
+                    </Link>{" "}
+                    et la{" "}
+                    <Link to="/confidentialite" target="_blank" rel="noopener">
+                      Politique de confidentialité
+                    </Link>
+                    .
+                  </span>
+                </label>
+              ) : null}
 
               {erreur ? (
                 <p className="error-text" role="alert">

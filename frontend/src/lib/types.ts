@@ -77,4 +77,7 @@ export type ChatMessage = {
   sources?: string[];
   pending?: boolean;
   error?: boolean;
+  /** Réponses successives obtenues avec « Régénérer » (la courante est `version`). */
+  versions?: { text: string; steps?: ToolStep[] }[];
+  version?: number;
 };

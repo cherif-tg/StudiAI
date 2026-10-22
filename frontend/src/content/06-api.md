@@ -12,8 +12,8 @@ Les routes de l'atelier exigent un compte. La session est un cookie
 |---|---|---|---|
 | `POST` | `/auth/register` | `{name, email, mot_de_passe}` | Crée le compte, ouvre la session (`201`) |
 | `POST` | `/auth/login` | `{email, mot_de_passe}` | Ouvre la session |
-| `POST` | `/auth/logout` | — | Ferme la session (`204`) |
-| `GET` | `/auth/me` | — | Profil courant, `401` si non connecté |
+| `POST` | `/auth/logout` | Aucun | Ferme la session (`204`) |
+| `GET` | `/auth/me` | Aucun | Profil courant, `401` si non connecté |
 
 Le cookie contient un jeton opaque ; seul son empreinte SHA-256 est stockée côté
 serveur. Les mots de passe sont hachés avec `scrypt` et un sel par compte.
@@ -67,7 +67,7 @@ Réponse de `/chat` :
 
 `artifacts` est toujours vide : un artefact ne peut être créé que par un appel
 explicite à `POST /artifacts`. Les `steps` sont la trace des outils réellement
-appelés — utile pour vérifier qu'une réponse s'appuie sur les documents.
+appelés : utile pour vérifier qu'une réponse s'appuie sur les documents.
 
 ## Codes d'erreur
 

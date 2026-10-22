@@ -1,138 +1,198 @@
 /* ==========================================================================
-   Nunya — jetons de design
-   Source : Charte_visuel/nunya-etude-graphique.md (palette validée).
-   Une seule règle : peu de couleurs, beaucoup d'air, un accent fort à la fois.
+   Nunya — jetons de design (refonte « Académie »)
+
+   Charte inspirée des standards edtech (Coursera, Khan Academy, edX, Moodle 4) :
+   - Dominante : bleu académique (confiance, savoir, structure).
+   - Accents   : or chaud (excellence) et vert émeraude (croissance, réussite).
+   - Fonds     : blancs et gris très clairs ; textes en ardoise foncée.
+   Règle : un seul accent fort par zone, beaucoup d'air, coins discrets.
    ========================================================================== */
 
 :root {
   color-scheme: light;
 
-  /* --- Couleurs de marque (brutes) ------------------------------------- */
-  --ardoise: #1b2a2e;
-  --craie: #efeae1;
-  --terre: #a6472e;
-  --indigo: #2b4357;
-  --mil: #5c6b4f;
-  --sable: #c9c0af;
+  /* --- Palette brute ---------------------------------------------------- */
+  --blue-950: #0a1a3a;
+  --blue-900: #0f2a5c;
+  --blue-800: #163d86;
+  --blue-700: #1a4bb0;
+  --blue-600: #1d58d6; /* bleu académique : couleur de marque */
+  --blue-500: #3a73e8;
+  --blue-100: #dde8fc;
+  --blue-50: #eef4ff;
+
+  --gold-600: #b7790a;
+  --gold-500: #d99a16; /* or chaud : distinction, mise en avant */
+  --gold-400: #f0b73a;
+  --gold-50: #fff6e0;
+
+  --emerald-700: #04694f;
+  --emerald-600: #057a5c; /* vert émeraude : réussite, validé */
+  --emerald-50: #e5f6ef;
+
+  --slate-950: #0b1424;
+  --slate-900: #111c2e;
+  --slate-700: #334155;
+  --slate-500: #5a6578;
+  --slate-400: #7b8597;
+
+  /* Alias historiques (référencés par certains composants). */
+  --ardoise: #111c2e;
+  --craie: #f6f8fb;
 
   /* --- Surfaces et texte (thème clair) --------------------------------- */
-  --bg: #efeae1;
-  --bg-soft: #e7e1d6;
-  --panel: #fbf9f4;
-  --panel-2: #f6f2e9;
-  --side: #f6f2e9;
+  --bg: #f5f7fb;
+  --bg-soft: #edf1f7;
+  --panel: #ffffff;
+  --panel-2: #f4f6fa;
+  --side: #f8fafc;
 
-  --ink: #1b2a2e;
-  --ink-soft: #3d4a4d;
-  --muted: #6b6456;
-  --muted-2: #857d6d;
+  --ink: #111c2e;
+  --ink-soft: #334155;
+  --muted: #5a6578;
+  --muted-2: #7b8597;
 
-  --accent: #a6472e;
+  /* Accent principal = bleu académique (actions, focus, liens). */
+  --accent: #1d58d6;
+  --accent-strong: #1a4bb0;
   --accent-ink: #ffffff;
-  --accent-soft: #f3e4dd;
-  --info: #2b4357;
-  --info-soft: #e3e9ee;
-  --green: #5c6b4f;
-  --green-soft: #e6e9df;
-  --ochre: #8a6b2e;
-  --ochre-soft: #f2ead8;
-  --red: #8c3a3a;
-  --red-soft: #f2e0df;
+  --accent-soft: #eef4ff;
 
-  --line: #ddd4c4;
-  --line-strong: #c9bda9;
+  /* Accent secondaire = or. `--gold` pour les formes, `--ochre` pour du texte. */
+  --gold: #d99a16;
+  --gold-soft: #fff6e0;
 
-  /* --- Élévations ------------------------------------------------------- */
-  --shadow-xs: 0 1px 2px rgba(27, 42, 46, 0.06);
-  --shadow-sm: 0 2px 8px rgba(27, 42, 46, 0.07);
-  --shadow-md: 0 12px 32px -12px rgba(27, 42, 46, 0.28);
-  --shadow-lg: 0 32px 64px -32px rgba(27, 42, 46, 0.35);
+  --info: #0b6e99;
+  --info-soft: #e4f3fa;
+  --green: #057a5c;
+  --green-soft: #e5f6ef;
+  --ochre: #8a5a00;
+  --ochre-soft: #fff4d9;
+  --red: #b42318;
+  --red-soft: #fdecea;
 
-  /* --- Typographie ------------------------------------------------------ */
-  --font-display: "Fraunces", "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --font-ui: "Work Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --line: #e3e8ef;
+  --line-strong: #cbd3df;
+
+  /* Couleurs de l'emblème (relevées sur le logo officiel). */
+  --logo-bleu: #134a6e;
+  --logo-or: #e5a612;
+  --logo-vert: #0f8a63;        /* vert émeraude */
+  --logo-vert-fonce: #0a6648;
+  --logo-texte: #134a6e;
+
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent);
+
+  /* --- Élévations (douces, à la Coursera) ------------------------------ */
+  --shadow-xs: 0 1px 2px rgba(15, 28, 52, 0.06);
+  --shadow-sm: 0 2px 8px rgba(15, 28, 52, 0.06), 0 1px 2px rgba(15, 28, 52, 0.04);
+  --shadow-md: 0 8px 24px -6px rgba(15, 28, 52, 0.14);
+  --shadow-lg: 0 24px 48px -16px rgba(15, 28, 52, 0.24);
+
+  /* --- Typographie ------------------------------------------------------
+     Inter / Inter Tight : très lisibles à petite taille, et couverture
+     complète de l'alphabet éwé (Ɖɖ Ƒƒ Ɣɣ Ŋŋ Ɔɔ Ʋʋ Ɛɛ) — vérifiée. */
+  --font-display: "Inter Tight", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-ui: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 
   --text-xs: 0.75rem;    /* 12 */
   --text-sm: 0.8125rem;  /* 13 */
-  --text-base: 0.875rem; /* 14 */
-  --text-md: 0.9375rem;  /* 15 */
-  --text-lg: 1.0625rem;  /* 17 */
+  --text-base: 0.9375rem; /* 15 */
+  --text-md: 1rem;       /* 16 */
+  --text-lg: 1.125rem;   /* 18 */
   --text-xl: 1.375rem;   /* 22 */
   --text-2xl: 1.75rem;   /* 28 */
   --text-3xl: 2.25rem;   /* 36 */
   --text-4xl: 3rem;      /* 48 */
 
-  /* --- Formes et rythme ------------------------------------------------- */
-  --r-xs: 8px;
-  --r-sm: 12px;
-  --r-md: 16px;
-  --r-lg: 22px;
-  --r-xl: 28px;
-  --r-pill: 999px;
+  /* --- Formes : arrondis discrets, jamais de « pilule » ----------------- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 10px;
+  --r-xl: 14px;
+  --r-pill: 6px; /* conservé pour compatibilité : volontairement discret */
 
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
   --sp-4: 16px;
-  --sp-5: 22px;
-  --sp-6: 28px;
+  --sp-5: 24px;
+  --sp-6: 32px;
   --sp-7: 40px;
-  --sp-8: 56px;
-  --sp-9: 80px;
+  --sp-8: 64px;
+  --sp-9: 88px;
 
   --sidebar: 264px;
   --topbar: 64px;
-  --content-max: 1180px;
+  --content-max: 1200px;
+  --tap: 44px; /* cible tactile minimale */
 
-  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* --- Mouvement : rapide et discret ----------------------------------- */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --fast: 120ms;
   --base: 180ms;
-  --slow: 320ms;
+  --slow: 280ms;
 }
 
 /* --- Thème sombre -------------------------------------------------------
-   Les accents sont éclaircis (et non conservés) pour tenir le contraste
-   sur fond ardoise, comme prévu par la charte.
+   Bleu nuit plutôt que noir pur ; accents éclaircis pour tenir le contraste.
    ------------------------------------------------------------------------ */
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #121a19;
-  --bg-soft: #0e1514;
-  --panel: #1f2c2a;
-  --panel-2: #1a2523;
-  --side: #1a2523;
+  --ardoise: #0b1424;
 
-  --ink: #ede7d9;
-  --ink-soft: #d8d1c2;
-  --muted: #a79f8c;
-  --muted-2: #8d8676;
+  --bg: #0b1322;
+  --bg-soft: #08101c;
+  --panel: #121c2e;
+  --panel-2: #172338;
+  --side: #0f1828;
 
-  --accent: #d98562;
-  --accent-ink: #221512;
-  --accent-soft: #3a2620;
-  --info: #7c9cb4;
-  --info-soft: #22323d;
-  --green: #8fa37e;
-  --green-soft: #26301f;
-  --ochre: #d9b15e;
-  --ochre-soft: #332a17;
-  --red: #d98a85;
-  --red-soft: #3a2323;
+  --ink: #e8edf5;
+  --ink-soft: #c7d0de;
+  --muted: #9aa6b9;
+  --muted-2: #7d899c;
 
-  --line: #2f3f3c;
-  --line-strong: #43544f;
+  --accent: #6b9bff;
+  --accent-strong: #8db2ff;
+  --accent-ink: #0a1a3a;
+  --accent-soft: #19294a;
+
+  --gold: #f0b73a;
+  --gold-soft: #33280f;
+
+  --info: #5cc1ea;
+  --info-soft: #102d3c;
+  --green: #3fcf9e;
+  --green-soft: #0f3127;
+  --ochre: #f3c662;
+  --ochre-soft: #33280f;
+  --red: #f39a90;
+  --red-soft: #3a1c1c;
+
+  --line: #233150;
+  --line-strong: #33446a;
+
+  --logo-bleu: #8bbbe0;
+  --logo-or: #f0b73a;
+  --logo-vert: #3fcf9e;
+  --logo-vert-fonce: #25a67c;
+  --logo-texte: #e8edf5;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 16px 40px -16px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 40px 80px -40px rgba(0, 0, 0, 0.7);
+  --shadow-md: 0 12px 32px -10px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 32px 64px -24px rgba(0, 0, 0, 0.7);
 }
 
 @media (max-width: 720px) {
   :root {
-    --text-3xl: 1.875rem;
+    --topbar: 58px;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.75rem;
     --text-4xl: 2.25rem;
   }
 }

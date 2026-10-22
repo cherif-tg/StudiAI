@@ -19,6 +19,8 @@ type Etat = "loading" | "ready" | "error";
 type AppDataValue = {
   sessionId: string;
   nouvelleSession: () => void;
+  /** Reprend une conversation précédente (identifiant de session déjà utilisé). */
+  reprendreSession: (id: string) => void;
 
   sources: Source[];
   sourcesEtat: Etat;
@@ -159,7 +161,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           setSources((liste) => [source, ...liste.filter((s) => s.id !== source.id)]);
           setSelection((liste) => (liste.includes(source.id) ? liste : [...liste, source.id]));
           push("Document indexé", {
-            message: `${source.filename} — ${source.chunks} passages`,
+            message: `${source.filename} · ${source.chunks} passages`,
             tone: "success",
           });
         } catch (erreur) {
@@ -245,10 +247,20 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     });
   }, [push]);
 
+  const reprendreSession = useCallback((id: string) => {
+    try {
+      localStorage.setItem(CLE_SESSION, id);
+    } catch {
+      /* sans stockage, la reprise reste en mémoire */
+    }
+    setSessionId(id);
+  }, []);
+
   const valeur = useMemo<AppDataValue>(
     () => ({
       sessionId,
       nouvelleSession,
+      reprendreSession,
       sources,
       sourcesEtat,
       sourcesErreur,
@@ -268,6 +280,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     [
       sessionId,
       nouvelleSession,
+      reprendreSession,
       sources,
       sourcesEtat,
       sourcesErreur,

@@ -22,9 +22,9 @@ function preferenceInitiale(): ThemePreference {
     const stocke = localStorage.getItem(CLE);
     if (stocke === "light" || stocke === "dark" || stocke === "system") return stocke;
   } catch {
-    /* stockage refusé : on suit le système */
+    /* stockage refusé : thème clair */
   }
-  return "system";
+  return "light";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -44,7 +44,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.theme = resolved;
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", resolved === "dark" ? "#121A19" : "#EFEAE1");
+      ?.setAttribute("content", resolved === "dark" ? "#121C2E" : "#FFFFFF");
   }, [resolved]);
 
   const setPreference = useCallback((valeur: ThemePreference) => {

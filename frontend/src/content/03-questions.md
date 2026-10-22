@@ -6,7 +6,7 @@ Nunya n'est pas un chatbot qui « sait des choses » : c'est un agent qui décid
 d'aller chercher dans tes documents avant de répondre.
 
 1. Il reçoit ta question et l'historique récent de la conversation.
-2. Il choisit d'appeler un outil — le plus souvent la **recherche documentaire**.
+2. Il choisit d'appeler un outil, le plus souvent la **recherche documentaire**.
 3. La recherche renvoie les passages les plus proches de ta question.
 4. Il rédige la réponse à partir de ces passages, puis l'affiche.
 
@@ -57,6 +57,25 @@ documents, et n'enregistre rien sans ton clic.
 Le mode choisi est mémorisé sur ton appareil. Tu peux en changer au milieu d'une
 conversation : le changement s'applique au message suivant.
 
+## Agir sur une question ou une réponse
+
+**Pendant que l'agent travaille**, l'emblème Nunya s'anime et un statut indique où il
+en est : réflexion, recherche dans tes documents, exécution des outils, rédaction.
+
+**Sous chaque réponse** :
+
+- **Copier** met le texte de la réponse dans le presse-papiers.
+- **Utile / inutile** (pouces) donne ton avis ; après « inutile », tu peux préciser
+  pourquoi (inexact, hors sujet, incomplet, peu clair). Un second clic annule.
+- **Régénérer** repose la même question pour obtenir une autre formulation. Les
+  réponses successives sont gardées : les flèches « ‹ 1/2 › » passent de l'une à l'autre.
+
+**Sur tes propres questions**, le crayon (au survol, ou toujours visible sur
+téléphone) permet de **modifier la question** : elle devient un champ de texte.
+Entrée relance la question réécrite, Échap annule. La nouvelle réponse remplace
+l'ancienne ; si d'autres échanges suivaient, ils sont remplacés aussi (un message
+te prévient avant).
+
 ## Conversation et mémoire
 
 L'agent garde les derniers échanges en mémoire pour comprendre les reprises
@@ -67,5 +86,5 @@ un redémarrage l'efface. Tes documents et tes artefacts, eux, persistent.
 
 Une question coûte typiquement quelques secondes : recherche vectorielle locale,
 puis appel au modèle de langage. Le premier chargement du moteur, lui, peut
-prendre plusieurs minutes après un démarrage — c'est pour cela que le badge
+prendre plusieurs minutes après un démarrage : c'est pour cela que le badge
 « Moteur en préparation » existe.

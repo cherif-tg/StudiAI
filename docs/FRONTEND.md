@@ -1,8 +1,8 @@
 # Frontend Nunya — documentation technique
 
-Interface web de l'atelier : sources, discussion, atelier, carnet, réglages et
-documentation utilisateur. Ce document s'adresse à qui reprend le code ; le mode
-d'emploi visible par l'apprenant est la page `/aide` de l'application.
+Interface de l'atelier : accueil, comptes, atelier à trois volets, carnet,
+révisions, réglages, documentation intégrée et pages légales. Le mode d'emploi
+visible par l'apprenant est la page `/documentation` de l'application.
 
 ---
 
@@ -10,16 +10,18 @@ d'emploi visible par l'apprenant est la page `/aide` de l'application.
 
 | Choix | Décision | Pourquoi |
 |---|---|---|
-| Framework | React 19 + TypeScript | Demande explicite ; typage strict sur les données d'API |
-| Build | Vite 8 | Démarrage instantané, proxy de dev vers FastAPI |
-| Routage | React Router 7 (`BrowserRouter`) | Routes réelles, URLs partageables |
-| Styles | CSS écrit à la main, variables CSS | Aucune dépendance UI, identité Nunya conservée (pas de look « template ») |
-| Icônes | SVG maison, 24×24, trait 1,6 px | Cohérence de trait, aucun emoji utilisé comme icône |
-| État | Contexts React (`Theme`, `Toast`, `AppData`) | Trois providers suffisent ; pas de store externe |
-| Markdown | Parseur maison (~150 lignes) | Les réponses contiennent des tableaux ; éviter une dépendance de 40 Ko |
-| Tests | `tsc --noEmit` + smoke jsdom | Vérifie le rendu réel du bundle sans navigateur |
+| Framework | React 19 + TypeScript strict | Typage des données d'API de bout en bout |
+| Build | Vite 8 | Démarrage instantané, relais de dev vers FastAPI |
+| Routage | React Router 7, `React.lazy` sur les pages secondaires | Code chargé au démarrage réduit |
+| Styles | CSS natif en jetons de design | Aucune dépendance d'interface, identité maîtrisée |
+| Polices | Inter et Inter Tight | Couvrent l'alphabet éwé (Ɖɖ Ƒƒ Ɣɣ Ŋŋ Ɔɔ Ʋʋ Ɛɛ) |
+| PWA | `manifest.json` + service worker écrits à la main | Installable, carnet consultable hors ligne |
+| État | Quatre contextes React | Pas de store externe |
+| Markdown | Parseur maison | Les réponses contiennent des tableaux |
+| Tests | Rendu sous jsdom (`scripts/smoke.mjs`) | Attrape les crashs sans navigateur |
 
-Bundle de production : **322 Ko JS (99 Ko gzip)**, **29 Ko CSS (6 Ko gzip)**.
+Bundle : ~362 Ko JS (112 Ko gzip) pour l'entrée, ~95 Ko CSS, pages secondaires
+chargées à la demande.
 
 ---
 
@@ -27,173 +29,155 @@ Bundle de production : **322 Ko JS (99 Ko gzip)**, **29 Ko CSS (6 Ko gzip)**.
 
 ```
 frontend/
-├── index.html              # thème appliqué avant peinture (pas de flash)
-├── vite.config.ts          # proxy /chat /sources /artifacts /translate /health
-├── scripts/smoke.mjs       # rendu du bundle dans jsdom
-├── public/favicon.svg      # favicon Nunya
+├── index.html              thème appliqué avant peinture, polices, manifeste
+├── vite.config.ts          relais /chat /sources /artifacts /translate /health /agent
+├── vercel.json             réécriture SPA, cache des assets, sw.js non caché
+├── .env.example            VITE_API_BASE_URL, VITE_CONTACT_*, VITE_EDITEUR_NOM…
+├── public/                 manifeste, service worker, icônes, emblème, captures
+├── scripts/smoke.mjs       rendu du bundle dans jsdom
 └── src/
-    ├── main.tsx            # point d'entrée, ordre des feuilles de style
-    ├── App.tsx             # providers + routes
-    ├── styles/
-    │   ├── tokens.css      # palette, typo, espacements, thèmes clair/sombre
-    │   ├── base.css        # reset, focus, animations, utilitaires
-    │   ├── app.css         # boutons, champs, cartes, topbar, modales, toasts
-    │   └── pages.css       # accueil, atelier 3 volets, carnet, réglages, aide
-    ├── context/
-    │   ├── ThemeProvider.tsx
-    │   ├── ToastProvider.tsx
-    │   └── AppDataProvider.tsx   # session, sources, artefacts, santé du moteur
-    ├── lib/
-    │   ├── api.ts          # client HTTP typé + erreurs lisibles
-    │   ├── types.ts        # miroir de backend/app/schemas.py
-    │   └── format.ts       # dates, tailles, identifiants, titres
-    ├── components/
-    │   ├── AppShell.tsx    # barre supérieure, navigation, bascule de thème
-    │   ├── Brand.tsx       # marque Nunyati
-    │   ├── Icon.tsx        # jeu d'icônes
-    │   ├── ArtifactGlyph.tsx  # formes des artefacts (charte §5)
-    │   ├── Markdown.tsx
-    │   ├── Modal.tsx
-    │   ├── StatusPill.tsx  # état réel du moteur (RAG / LLM)
-    │   └── workspace/
-    │       ├── SourcesPane.tsx
-    │       ├── ChatPane.tsx
-    │       └── AtelierPane.tsx
-    └── pages/
-        ├── Landing.tsx  Auth.tsx  Workspace.tsx
-        ├── Carnet.tsx  Settings.tsx  Help.tsx  NotFound.tsx
+    ├── main.tsx            montage, démarrage du service worker
+    ├── App.tsx             fournisseurs, routes, bandeaux globaux
+    ├── components/         AppShell, SiteFooter, CookieConsent, InstallPrompt,
+    │                       OfflineBanner, ChampMotDePasse, RequireAuth, workspace/
+    ├── pages/              Landing, Auth, Workspace, Carnet, Revisions,
+    │                       Settings, Documentation, Legal, MotDePasse, 404
+    ├── context/            Theme, Toast, Auth, AppData
+    ├── hooks/              useFocusTrap, useRevision
+    ├── lib/                api, types, pwa, conversations, revision, passages,
+    │                       avis, export, contact, stockage, format
+    ├── content/            documentation intégrée et pages légales (Markdown)
+    └── styles/             tokens, base, app, pages, landing
 ```
 
 ---
 
-## 3. Design system
+## 3. Design system — refonte « Académie »
 
-Hérité de `Charte_visuel/nunya-etude-graphique.md` : rien n'a été réinventé.
+Le repère visuel est bleu académique / or / émeraude, inspiré des standards
+edtech (Coursera, Khan Academy, edX, Moodle 4). Les anciens jetons terre de
+barre / craie restent en alias pour les composants qui les référencent encore.
 
-- **Palette** : craie (`#EFEAE1`), ardoise (`#1B2A2E`), terre de barre
-  (`#A6472E`, accent), indigo (`#2B4357`, information), vert mil (`#5C6B4F`,
-  succès), ochre et rouge pour les états.
-- **Règle d'accent** : la terre de barre ne sert qu'à l'action principale et à
-  l'état actif. Le reste est neutre — c'est ce qui garde l'interface sobre.
-- **Typographie** : Fraunces (titres, accents éditoriaux), Work Sans (interface,
-  corps de texte), JetBrains Mono (identifiants, traces d'outils). Piles de
-  secours déclarées si les polices distantes ne chargent pas.
-- **Thèmes** : clair, sombre, système. Le thème est appliqué dans `index.html`
-  avant la première peinture pour éviter le flash.
-- **Formes** : panneaux 22 px, boutons en pilule, champs 12 px — conformes à la
-  charte « interface fluide ».
-- **Mouvement** : transitions de 120 à 320 ms, une seule animation d'entrée
-  (fade-up). `prefers-reduced-motion` désactive tout.
+| Rôle | Clair | Sombre |
+|---|---|---|
+| Bleu académique (actions, liens, focus) | `#1d58d6` | `#6b9bff` |
+| Or (distinction, sur-titres, révisions) | `#d99a16` | `#f0b73a` |
+| Vert émeraude (réussite, « Indexé ») | `#057a5c` | `#3fcf9e` |
+| Fond / panneau | `#f5f7fb` / `#ffffff` | `#0b1322` / `#121c2e` |
+| Texte / atténué | `#111c2e` / `#5a6578` | `#e8edf5` / `#9aa6b9` |
+
+- **Thème clair par défaut**, même si le système est en sombre ; « Sombre » et
+  « Système » restent au choix dans les Réglages. Appliqué dans `index.html`
+  avant la première peinture.
+- **Coins de 4 à 14 px**, plus aucune forme « pilule ».
+- **Mouvement** : 120 à 280 ms, coupé si `prefers-reduced-motion`.
+- **Un seul accent fort par zone**, beaucoup d'air.
+
+Les jetons sont dans `src/styles/tokens.css` : c'est le seul endroit à modifier
+pour changer une couleur ou une police.
 
 ---
 
 ## 4. Routes
 
-| Route | Page | Rôle |
-|---|---|---|
-| `/` | Landing | Présentation, preuve visuelle, entrée dans l'atelier |
-| `/connexion` | Auth | Connexion / inscription (visuel), session locale |
-| `/atelier` | Workspace | Trois volets : Sources, Discussion, Atelier |
-| `/carnet` | Carnet | Artefacts explicitement enregistrés, filtres, ouverture |
-| `/reglages` | Settings | Thème, langue, session, documents, moteur, à propos |
-| `/aide` | Help | Mode d'emploi, limites connues, dépannage |
-| `*` | NotFound | 404 |
+Voir le tableau du `README.md` (§2). Toutes les pages qui touchent des données
+personnelles sont sous `RequireAuth`, qui redirige vers `/connexion` en conservant
+la destination.
 
 ---
 
-## 5. Données et contrat d'API
+## 5. Données et API
 
-`AppDataProvider` centralise ce que plusieurs pages partagent :
-
-- `sessionId` (localStorage `nunya.session`), `nouvelleSession()`
-- `sources`, `deposerFichiers()`, `retirerSource()`, `selection`
-- `artefacts`, `enregistrerArtefact()`
-- `sante` (interrogée toutes les 12 s tant que le RAG n'est pas prêt, puis 60 s)
-
-Endpoints consommés (aucun autre) :
+`AppDataProvider` centralise sources, artefacts et santé du moteur ;
+`AuthProvider` porte la session. Les appels passent tous par `src/lib/api.ts`.
 
 | Méthode | Route | Usage |
 |---|---|---|
 | GET | `/health` | badge « Prêt / Moteur en préparation / LLM absent » |
-| GET | `/agent/modes` | catalogue des modes de réponse (libellé, description) |
-| GET | `/sources` | liste des documents |
-| POST | `/sources` | dépôt multipart, renvoie `chunks` |
-| DELETE | `/sources/{id}` | retrait du document **et** de son index |
-| POST | `/chat` | question → réponse + `steps` + artefacts vides (+ `mode`) |
-| GET | `/artifacts?session_id=` | carnet |
-| POST | `/artifacts` | enregistrement explicite (résumé ou quiz) |
+| GET | `/agent/modes` | catalogue des modes de réponse |
+| POST | `/auth/register`, `/auth/login`, `/auth/logout` | comptes |
+| GET | `/auth/me` | profil courant |
+| DELETE | `/auth/me` | suppression du compte (mot de passe requis) |
+| GET | `/auth/me/export` | archive ZIP : profil, documents, carnet |
+| POST | `/auth/password/forgot`, `/auth/password/reset` | mot de passe oublié |
+| GET/POST/DELETE | `/sources`, `/sources/{id}` | documents |
+| POST | `/chat` | question → réponse + `steps` (dont `passages`) |
+| POST | `/chat/feedback` | avis utile / inutile sous une réponse |
+| GET/POST | `/artifacts`, `/artifacts/{fichier}` | carnet |
+| POST | `/contact` | formulaire du pied de page |
 
-**Invariant respecté par l'interface** : aucun appel à `POST /artifacts` n'est
-déclenché autrement que par un clic sur « Ajouter au Carnet ». L'Atelier affiche
-un rappel « Rien n'est enregistré tant que tu ne cliques pas ».
+**Invariant respecté par l'interface** : aucun appel à `POST /artifacts` en dehors
+du clic sur « Ajouter au Carnet ». Un résumé ou un quiz affiché n'est jamais
+enregistré tout seul.
+
+**Historique des conversations** : gardé dans le navigateur
+(`lib/conversations.ts`), pas côté serveur. La mémoire de l'agent, elle, vit en
+mémoire du processus et repart à vide au redémarrage.
 
 ---
 
-## 6. Accessibilité
+## 6. Accessibilité et PWA
 
-- Lien d'évitement « Aller au contenu », focus visible conservé partout.
-- Zones cliquables non-boutons (lignes de sources) : `role="button"`,
-  `tabIndex=0`, activation par Entrée/Espace, `aria-pressed`.
-- Toasts en `role="status"` + `aria-live="polite"`.
-- Modale : `aria-modal`, fermeture par Échap, focus initial.
-- Contrastes : texte principal sur fond craie/panneau ≥ 7:1 ; accents réservés
-  aux éléments porteurs de sens.
-- Aucune information ne repose sur la couleur seule (les formes d'artefacts
-  diffèrent par leur géométrie).
+- Lien d'évitement, focus visible, focus piégé et restitué dans les fenêtres et le
+  menu mobile, titres hiérarchisés, annonces pour lecteurs d'écran.
+- Contrastes visés : WCAG 2.1 AA (4,5:1 pour le texte).
+- Cibles tactiles de 40 à 44 px, champs en 16 px (pas de zoom sur iPhone), zones
+  sûres des écrans à encoche.
+- Service worker : coquille hors ligne et carnet en cache ; bandeau « Hors ligne ».
+- Bandeau cookies avec choix mémorisé 12 mois, réouvrable depuis le pied de page.
 
 ---
 
 ## 7. Développement
 
 ```powershell
-# terminal 1 — backend
+# terminal 1 — API
 cd backend
 ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
 
 # terminal 2 — interface
 cd frontend
-npm install
-npm run dev          # http://localhost:5173, proxy vers :8000
+npm ci
+npm run dev          # http://localhost:5173, relais vers :8000
 ```
 
 Vérifications avant livraison :
 
 ```powershell
-npm run typecheck                                  # tsc --noEmit
-npm run build                                      # produit dist/
-npm run build:smoke                                # bundle IIFE pour jsdom
-npm run smoke -- /atelier                          # rendu réel, page par page
-npm run smoke -- /carnet ; npm run smoke -- /aide
+npm run typecheck     # tsc --noEmit
+npm run build         # dist/
+npm run build:smoke   # bundle IIFE pour jsdom
+npm run smoke -- /atelier
+npm run verifier      # les trois d'un coup
 ```
 
-Le smoke test exécute le bundle compilé dans jsdom et échoue si la page est
-vide ou si une exception est levée au montage. Il ne juge pas la mise en page.
+Le build est servi par FastAPI (`frontend/dist` monté sur `/`), avec repli sur
+`Charte_visuel/nunya-maquette.html` puis sur une page d'information si aucun
+build n'existe.
 
-Le build est servi par FastAPI : `backend/app/main.py` monte `frontend/dist`
-(`/assets`) et renvoie `index.html` pour toute route inconnue, avec repli sur
-`Charte_visuel/nunya-maquette.html` si `dist/` n'existe pas.
+Variables utiles (`frontend/.env`) : `VITE_API_BASE_URL` (vide en même origine),
+`VITE_CONTACT_ENDPOINT` ou `VITE_CONTACT_EMAIL`, `VITE_EDITEUR_NOM`,
+`VITE_HEBERGEUR_NOM` (pages légales).
 
 ---
 
 ## 8. Conventions
 
-- Français pour les noms de variables d'interface et les commentaires ;
-  anglais conservé pour les noms d'API (`summary`, `quiz`, `source_ids`).
-- Aucun composant ne parle directement à `fetch` : tout passe par `lib/api.ts`.
-- Les états sont explicites : `loading`, `ready`, `error` — pas de `undefined`
-  ambigu à l'écran.
-- Un composant = un fichier ; au-delà de ~250 lignes, découper.
+- Français pour le domaine et l'affichage, anglais pour les noms d'API.
+- Aucune bibliothèque d'interface ; une couleur vient de `tokens.css`, jamais
+  d'un code hexadécimal dans un composant.
+- Pas de `fetch` hors de `lib/api.ts`.
+- Chaque écran gère quatre états : chargement, vide, erreur, rempli.
+- Une page = un fichier dans `pages/` ; au-delà de ~250 lignes, découper.
 
 ---
 
-## 9. Limites assumées de cette version
+## 9. Limites connues
 
-- **Pas d'authentification réelle** : la page de connexion l'annonce et propose
-  une session locale. Le backend n'expose pas encore de comptes.
-- **Pas de persistance de l'historique de discussion** : le composant garde les
-  messages en mémoire ; un rechargement les efface (les artefacts et sources
-  persistent).
-- **Outils non branchés** (graphique, fiche bilingue, export) : visibles,
-  désactivés, avec explication. Aucune simulation.
-- **Pas de contrôle visuel automatisé** : le smoke test jsdom attrape les crashs
-  de rendu, pas les défauts de mise en page.
+- Pas de contrôle visuel automatisé : le test jsdom attrape les crashs de rendu,
+  pas les défauts de mise en page.
+- L'historique des conversations ne suit pas d'un appareil à l'autre.
+- Les révisions espacées sont calculées dans le navigateur (perdues si le stockage
+  local est effacé).
+- Les pages légales doivent être relues par un juriste avant une mise en ligne
+  publique.

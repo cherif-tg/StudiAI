@@ -8,8 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from dotenv import load_dotenv
+
 from app.api import agent, artifacts, auth, chat, health, sources, translate
 from app.config import get_settings
+from app.integration.avis import creer_routeur_avis
+from app.integration.compte import creer_routeur_compte
+from app.integration.contact import creer_routeur_contact
+from app.integration_depot import DepotNunya
 from app.services.container import get_services
 
 settings = get_settings()
@@ -19,6 +25,10 @@ ROOT = Path(__file__).resolve().parents[2]
 MAQUETTE = ROOT / "Charte_visuel" / "nunya-maquette.html"
 DIST = ROOT / "frontend" / "dist"
 INDEX = DIST / "index.html"
+
+# Les modules d'intégration lisent SMTP_*, CONTACT_DESTINATAIRE et APP_PUBLIC_URL
+# via os.getenv : on charge donc aussi le .env dans l'environnement du processus.
+load_dotenv(ROOT / ".env", override=False)
 
 
 @asynccontextmanager
@@ -57,6 +67,19 @@ app.include_router(chat.router)
 app.include_router(sources.router)
 app.include_router(artifacts.router)
 app.include_router(translate.router)
+
+# --- Routes d'intégration (droits sur les données, contact, avis) ----------
+# Elles doivent être déclarées avant le repli de l'application monopage, sinon
+# `GET /auth/me/export` serait intercepté et renverrait index.html.
+_depot = DepotNunya(get_services())
+app.include_router(creer_routeur_compte(_depot))
+app.include_router(creer_routeur_contact(settings.db_path))
+app.include_router(
+    creer_routeur_avis(
+        settings.db_path,
+        lambda requete: _depot.utilisateur_depuis_jeton(requete.cookies.get("nunya_session", "")),
+    )
+)
 
 # Les artefacts ne sont plus montés en statique : ils sont servis par une route
 # qui vérifie le propriétaire (api/artifacts.py).

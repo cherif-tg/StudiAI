@@ -9,7 +9,7 @@ const COULEURS: Record<Forme, string> = {
   fiche: "var(--accent)",
   resume: "var(--info)",
   quiz: "var(--green)",
-  graphique: "var(--ochre)",
+  graphique: "var(--gold)",
   export: "var(--muted-2)",
 };
 

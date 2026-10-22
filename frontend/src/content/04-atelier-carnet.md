@@ -4,8 +4,8 @@
 
 L'Atelier est le volet de droite. Il reçoit les résultats produits par l'agent :
 
-- **Résumé** — un texte structuré en Markdown, généré depuis tes passages.
-- **Quiz** — un QCM avec quatre choix par question, une bonne réponse et une
+- **Résumé** : un texte structuré en Markdown, généré depuis tes passages.
+- **Quiz** : un QCM avec quatre choix par question, une bonne réponse et une
   explication.
 
 Les autres outils (graphique, fiche bilingue, export) sont visibles mais
@@ -30,21 +30,29 @@ peuvent pas écrire dans le carnet. Seul ton clic déclenche l'enregistrement.
 Le quiz enregistré conserve les questions, les choix et les explications au
 format JSON : il reste lisible même sans l'application.
 
-## Le carnet — « Mon Nunyati »
+## Le carnet, « Mon Nunyati »
 
 Le carnet liste ce que tu as explicitement gardé, du plus récent au plus ancien.
 
 | Élément | Détail |
 |---|---|
-| Filtres | Tout, Résumés, Quiz — avec le nombre pour chaque catégorie |
+| Filtres | Tout, Résumés, Quiz, avec le nombre pour chaque catégorie |
 | Métadonnées | Type, date et heure d'enregistrement |
 | Actions | **Ouvrir** (dans un onglet) et **Télécharger** |
 
 Les artefacts sont rattachés à la session : une nouvelle session repart avec un
 carnet vide, sans supprimer tes documents.
 
-## Ce que le carnet ne fait pas encore
+## Historique des conversations
 
-Le suivi par notion et l'historique des scores de quiz ne sont pas implémentés.
-Aucune progression chiffrée n'est affichée : mieux vaut pas de mesure qu'une
-mesure inventée.
+Le bouton **Historique**, en haut de la discussion, liste tes conversations
+précédentes : un clic suffit pour en reprendre une. Elles sont gardées dans ton
+navigateur, rangées par compte. Si le serveur a redémarré entre-temps, l'agent
+repart sans le contexte des échanges précédents : rappelle-lui le sujet.
+
+## Révisions
+
+Chaque réponse ratée dans un quiz rejoint la page **Révisions** et revient le
+lendemain. Bien répondue, la question revient de plus en plus tard (3 jours,
+1 semaine, 2 semaines, 1 mois) ; ratée, elle revient le lendemain. La page
+affiche aussi la réussite par notion (une notion correspond à un quiz).

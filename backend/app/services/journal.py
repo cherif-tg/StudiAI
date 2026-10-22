@@ -49,6 +49,13 @@ CREATE TABLE IF NOT EXISTS events(
     args TEXT,
     result_preview TEXT,
     created_at REAL);
+
+-- Jetons de réinitialisation : seule l'empreinte SHA-256 est conservée.
+CREATE TABLE IF NOT EXISTS password_resets(
+    token_hash TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    expires_at REAL NOT NULL,
+    used_at REAL);
 """
 
 # Créés après la migration : un index sur une colonne absente ferait échouer
@@ -57,6 +64,7 @@ INDEX = """
 CREATE INDEX IF NOT EXISTS idx_sources_owner ON sources(owner_id);
 CREATE INDEX IF NOT EXISTS idx_artifacts_owner ON artifacts(owner_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_resets_user ON password_resets(user_id);
 """
 
 
@@ -142,6 +150,39 @@ class Journal:
         with self._conn() as c:
             c.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
 
+    # --- Mot de passe ----------------------------------------------------
+
+    def definir_mot_de_passe(self, user_id: str, password_hash: str) -> None:
+        with self._conn() as c:
+            c.execute("UPDATE users SET password_hash=? WHERE id=?", (password_hash, user_id))
+
+    def enregistrer_jeton_reinitialisation(
+        self, user_id: str, empreinte: str, expire_le: float
+    ) -> None:
+        with self._conn() as c:
+            c.execute(
+                "INSERT OR REPLACE INTO password_resets(token_hash, user_id, expires_at, used_at)"
+                " VALUES (?,?,?,NULL)",
+                (empreinte, user_id, expire_le),
+            )
+
+    def consommer_jeton_reinitialisation(self, empreinte: str, maintenant: float) -> str | None:
+        """Renvoie l'utilisateur si le jeton est valide, puis le marque comme utilisé."""
+        with self._conn() as c:
+            ligne = c.execute(
+                "SELECT * FROM password_resets WHERE token_hash=?", (empreinte,)
+            ).fetchone()
+            if not ligne or ligne["used_at"] is not None or ligne["expires_at"] <= maintenant:
+                return None
+            c.execute(
+                "UPDATE password_resets SET used_at=? WHERE token_hash=?", (maintenant, empreinte)
+            )
+            return ligne["user_id"]
+
+    def supprimer_jetons_utilisateur(self, user_id: str) -> None:
+        with self._conn() as c:
+            c.execute("DELETE FROM password_resets WHERE user_id=?", (user_id,))
+
     # --- Sources ---------------------------------------------------------
 
     def add_source(self, owner_id: str, source_id: str, filename: str, chunks: int) -> None:
@@ -170,6 +211,30 @@ class Journal:
     def supprimer_source(self, owner_id: str, source_id: str) -> None:
         with self._conn() as c:
             c.execute("DELETE FROM sources WHERE id=? AND owner_id=?", (source_id, owner_id))
+
+    def supprimer_artefact(self, owner_id: str, artifact_id: str) -> dict | None:
+        """Supprime la ligne et renvoie sa description, pour effacer le fichier."""
+        with self._conn() as c:
+            ligne = c.execute(
+                "SELECT * FROM artifacts WHERE id=? AND owner_id=?", (artifact_id, owner_id)
+            ).fetchone()
+            if not ligne:
+                return None
+            c.execute("DELETE FROM artifacts WHERE id=?", (artifact_id,))
+            return dict(ligne)
+
+    def supprimer_utilisateur(self, user_id: str) -> None:
+        """Efface le compte et tout ce qui y est rattaché.
+
+        Les fichiers et l'index vectoriel sont nettoyés par l'adaptateur avant
+        cet appel ; ici on garantit qu'aucune ligne ne survit.
+        """
+        with self._conn() as c:
+            c.execute("DELETE FROM password_resets WHERE user_id=?", (user_id,))
+            c.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
+            c.execute("DELETE FROM artifacts WHERE owner_id=?", (user_id,))
+            c.execute("DELETE FROM sources WHERE owner_id=?", (user_id,))
+            c.execute("DELETE FROM users WHERE id=?", (user_id,))
 
     # --- Artefacts -------------------------------------------------------
 

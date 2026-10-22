@@ -1,6 +1,7 @@
 import asyncio
 from dataclasses import asdict
 
+from app.integration.passages import passages_pour_interface
 from app.tools.base import Tool, ToolContext, ToolResult
 
 
@@ -22,4 +23,11 @@ class RagSearchTool(Tool):
         if not hits:
             return ToolResult("Aucun passage pertinent trouvé dans les sources.")
         text = "\n\n".join(f"[{i}] ({h.filename}) {h.text}" for i, h in enumerate(hits, 1))
-        return ToolResult(text, data={"hits": [asdict(h) for h in hits]})
+        return ToolResult(
+            text,
+            data={
+                "hits": [asdict(h) for h in hits],
+                # Format attendu par l'interface pour afficher les extraits cités.
+                "passages": passages_pour_interface(hits),
+            },
+        )

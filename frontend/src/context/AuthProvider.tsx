@@ -11,6 +11,8 @@ type AuthContextValue = {
   connecter: (email: string, motDePasse: string) => Promise<void>;
   inscrire: (nom: string, email: string, motDePasse: string) => Promise<void>;
   deconnecter: () => Promise<void>;
+  /** Supprime définitivement le compte (route backend requise, voir README). */
+  supprimerCompte: (motDePasse: string, avantDeconnexion?: () => void | Promise<void>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -57,9 +59,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const supprimerCompte = useCallback(
+    async (motDePasse: string, avantDeconnexion?: () => void | Promise<void>) => {
+      await api.supprimerCompte(motDePasse);
+      // Ex. quitter une page protégée avant que la session disparaisse.
+      await avantDeconnexion?.();
+      setUser(null);
+    },
+    [],
+  );
+
   const valeur = useMemo(
-    () => ({ user, pret, connecter, inscrire, deconnecter }),
-    [user, pret, connecter, inscrire, deconnecter],
+    () => ({ user, pret, connecter, inscrire, deconnecter, supprimerCompte }),
+    [user, pret, connecter, inscrire, deconnecter, supprimerCompte],
   );
 
   return <AuthContext.Provider value={valeur}>{children}</AuthContext.Provider>;

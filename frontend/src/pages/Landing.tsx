@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 
 import { AppShell } from "../components/AppShell";
 import { ArtifactGlyph } from "../components/ArtifactGlyph";
+import { Mark } from "../components/Brand";
 import { Icon } from "../components/Icon";
 import type { IconName } from "../components/Icon";
-import { Mark } from "../components/Brand";
 import { useAuth } from "../context/AuthProvider";
 
 /* --------------------------------------------------------------------------
@@ -30,7 +30,7 @@ const ETAPES = [
     icone: "discussion" as IconName,
     titre: "Pose ta question",
     texte:
-      "L'agent décide lui-même d'aller chercher dans tes sources. Il ne répond qu'avec les passages trouvés — sinon il le dit.",
+      "L'agent décide lui-même d'aller chercher dans tes sources. Il ne répond qu'avec les passages trouvés, sinon il le dit.",
   },
   {
     icone: "carnet" as IconName,
@@ -91,6 +91,27 @@ const PUBLICS = [
   {
     titre: "Autodidacte",
     texte: "Transformer des PDF accumulés en réponses claires et en fiches consultables.",
+  },
+];
+
+const SYMBOLES = [
+  {
+    cle: "livre",
+    titre: "Le livre",
+    texte:
+      "L'apprentissage et la transmission du savoir : tes cours, ouverts, qui se partagent et se comprennent.",
+  },
+  {
+    cle: "plume",
+    titre: "La plume",
+    texte:
+      "L'écriture, l'effort d'apprendre et la création : on comprend vraiment ce qu'on sait reformuler.",
+  },
+  {
+    cle: "soleil",
+    titre: "Le soleil",
+    texte:
+      "La lumière de la compréhension, l'esprit qui s'éveille, et l'avenir qui se lève sur chaque apprenant.",
   },
 ];
 
@@ -222,7 +243,7 @@ export function Landing() {
             </h1>
             <p className="lp-hero__lead">
               Nunya lit tes cours, retrouve le passage juste et répond avec sa source. Résumés
-              et quiz se génèrent à la demande — et rien n'est conservé sans ton geste.
+              et quiz se génèrent à la demande, et rien n'est conservé sans ton geste.
             </p>
 
             <div className="lp-actions">
@@ -257,26 +278,12 @@ export function Landing() {
                 ɛ
               </span>
 
-              <svg className="lp-mark" viewBox="0 0 64 64" aria-hidden="true">
-                <path
-                  className="lp-mark__path"
-                  pathLength={1}
-                  d="M32 54V28"
-                  stroke="var(--green)"
-                />
-                <path
-                  className="lp-mark__path lp-mark__path--2"
-                  pathLength={1}
-                  d="M32 28C12 28 12 6 29 4"
-                  stroke="var(--green)"
-                />
-                <path
-                  className="lp-mark__path lp-mark__path--3"
-                  pathLength={1}
-                  d="M32 32C52 32 52 12 37 8"
-                  stroke="var(--accent)"
-                />
-              </svg>
+              <span className="lp-mark">
+                <Mark size={132} className="lp-logo" titre="Emblème Nunya : livre, plume et soleil" />
+              </span>
+              <span className="lp-mark__nom brand__texte" aria-hidden="true">
+                Nunya
+              </span>
             </div>
 
             <Pipeline />
@@ -415,6 +422,38 @@ export function Landing() {
           </div>
         </section>
 
+        {/* --- Emblème ------------------------------------------------------ */}
+        <section className="lp-embleme" data-reveal aria-labelledby="titre-embleme">
+          <div className="lp-embleme__marque">
+            <div className="lp-embleme__logo">
+              <Mark size={220} className="lp-logo lp-logo--grand" />
+            </div>
+            <p className="lp-embleme__nom brand__texte" aria-hidden="true">
+              Nunya
+              <small>Atelier d'apprentissage</small>
+            </p>
+          </div>
+          <div className="lp-embleme__texte">
+            <p className="eyebrow">Notre emblème</p>
+            <h2 id="titre-embleme">Un livre, une plume, un soleil</h2>
+            <p className="lp-head__lead">
+              « Nunya » veut dire « savoir, sagesse » en éwé. Notre emblème raconte ce chemin vers le
+              savoir, en trois symboles.
+            </p>
+            <ul className="lp-symboles">
+              {SYMBOLES.map((symbole) => (
+                <li key={symbole.cle} data-symbole={symbole.cle}>
+                  <span className="lp-symboles__puce" aria-hidden="true" />
+                  <div>
+                    <h3>{symbole.titre}</h3>
+                    <p>{symbole.texte}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
         {/* --- Frontières --------------------------------------------------- */}
         <section className="lp-limites" data-reveal>
           <div className="lp-limites__head">
@@ -469,23 +508,6 @@ export function Landing() {
           </Link>
         </section>
 
-        <footer className="lp-footer">
-          <div className="lp-footer__brand">
-            <Mark size={22} />
-            <span>
-              Nunya — atelier d'apprentissage, Togo.
-              <br />
-              <span className="muted small">MVP documentaire en construction.</span>
-            </span>
-          </div>
-          <nav className="lp-footer__links" aria-label="Liens de pied de page">
-            <Link to="/documentation">Documentation</Link>
-            <Link to={user ? "/documentation#auto-hebergement" : "/connexion"}>
-              {user ? "Auto-héberger" : "Connexion"}
-            </Link>
-            <Link to="/documentation#limites">Limites</Link>
-          </nav>
-        </footer>
       </div>
     </AppShell>
   );

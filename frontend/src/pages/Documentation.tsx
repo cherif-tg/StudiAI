@@ -127,7 +127,7 @@ export function Documentation() {
           <article className="docs-article" aria-label={sectionActive.titre}>
             <div className="row gap-2" style={{ justifyContent: "flex-end", marginBottom: 8 }}>
               <button className="btn btn--quiet btn--sm" onClick={() => void copierLien()}>
-                <Icon name="cle" size={13} />
+                <Icon name="lien" size={13} />
                 Copier le lien
               </button>
             </div>
