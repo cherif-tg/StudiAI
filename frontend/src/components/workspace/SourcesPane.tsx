@@ -32,11 +32,11 @@ export function SourcesPane() {
   return (
     <section className="pane pane--sources" aria-label="Sources">
       <div className="pane__head">
-        <span className="pane__title">
+        <h2 className="pane__title">
           <Icon name="sources" size={15} />
           Sources
           {sources.length ? <span className="badge">{sources.length}</span> : null}
-        </span>
+        </h2>
         <div className="row gap-2">
           {sources.length > 1 ? (
             <button
@@ -64,7 +64,7 @@ export function SourcesPane() {
 
         {sourcesEtat === "error" ? (
           <div className="empty">
-            <h4>Documents indisponibles</h4>
+            <h3>Documents indisponibles</h3>
             <p>{sourcesErreur ?? "Le serveur n'a pas répondu."}</p>
             <button className="btn btn--sm" onClick={() => void rafraichirSources()}>
               <Icon name="rafraichir" size={14} />
@@ -75,7 +75,7 @@ export function SourcesPane() {
 
         {sourcesEtat === "ready" && !sources.length ? (
           <div className="empty">
-            <h4>Aucun document</h4>
+            <h3>Aucun document</h3>
             <p>
               Dépose un cours en PDF ou Word : il sera découpé en passages et utilisé pour
               répondre à tes questions.
@@ -86,35 +86,27 @@ export function SourcesPane() {
         {sources.map((source) => {
           const actif = selection.includes(source.id);
           return (
-            <div
-              key={source.id}
-              className="source-row"
-              data-on={actif}
-              onClick={() => basculerSource(source.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(evenement) => {
-                if (evenement.key === "Enter" || evenement.key === " ") {
-                  evenement.preventDefault();
-                  basculerSource(source.id);
-                }
-              }}
-              aria-pressed={actif}
-            >
-              <span className="checkbox-dot" aria-hidden="true">
-                <Icon name="coche" size={11} strokeWidth={2.4} />
-              </span>
-              <div className="source-row__main">
-                <span className="source-row__name" title={source.filename}>
-                  {source.filename}
+            <div key={source.id} className="source-row" data-on={actif}>
+              <button
+                type="button"
+                className="source-row__toggle"
+                onClick={() => basculerSource(source.id)}
+                aria-pressed={actif}
+                title={actif ? "Utilisé pour répondre : cliquer pour l'exclure" : "Exclu : cliquer pour l'utiliser"}
+              >
+                <span className="checkbox-dot" aria-hidden="true">
+                  <Icon name="coche" size={11} strokeWidth={2.4} />
                 </span>
-                <span className="source-row__meta">
-                  <span className="badge badge--ok" style={{ padding: "0 6px" }}>
-                    Indexé
+                <span className="source-row__main">
+                  <span className="source-row__name">{source.filename}</span>
+                  <span className="source-row__meta">
+                    <span className="badge badge--ok" style={{ padding: "0 6px" }}>
+                      Indexé
+                    </span>
+                    {source.chunks} passages
                   </span>
-                  {source.chunks} passages
                 </span>
-              </div>
+              </button>
               <button
                 className="btn btn--quiet btn--sm btn--icon"
                 onClick={(evenement) => {

@@ -13,7 +13,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "build:smoke": "vite build --config vite.smoke.config.ts",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "verifier": "npm run build && npm run build:smoke && npm run smoke -- /"
   },
   "dependencies": {
     "react": "^19.3.1",

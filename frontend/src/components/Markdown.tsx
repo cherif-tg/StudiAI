@@ -90,6 +90,13 @@ function analyser(markdown: string): Bloc[] {
       continue;
     }
 
+    // Ligne indentée juste après un point de liste : c'est la suite de ce point,
+    // pas un nouveau paragraphe (cas des listes dont le texte est replié).
+    if (liste && liste.length && /^\s+\S/.test(ligne)) {
+      liste[liste.length - 1] = `${liste[liste.length - 1]} ${ligne.trim()}`;
+      continue;
+    }
+
     const puce = /^[-*+]\s+(.*)$/.exec(ligne);
     const numero = /^\d+[.)]\s+(.*)$/.exec(ligne);
     if (puce || numero) {
@@ -166,7 +173,7 @@ export function Markdown({ text, className = "prose" }: { text: string; classNam
         }
         if (bloc.type === "table") {
           return (
-            <div key={cle} style={{ overflowX: "auto", margin: "10px 0" }}>
+            <div key={cle} className="table-wrap">
               <table className="table">
                 <thead>
                   <tr>
@@ -190,14 +197,14 @@ export function Markdown({ text, className = "prose" }: { text: string; classNam
         }
         if (bloc.type === "quote") {
           return (
-            <blockquote key={cle} style={{ borderLeft: "2px solid var(--line-strong)", paddingLeft: 12, color: "var(--muted)" }}>
+            <blockquote key={cle} className="md-quote">
               {enrichir(bloc.text, cle)}
             </blockquote>
           );
         }
         if (bloc.type === "code") {
           return (
-            <pre key={cle} style={{ background: "var(--panel-2)", padding: 12, borderRadius: 12, overflowX: "auto" }}>
+            <pre key={cle} className="md-code">
               <code>{bloc.text}</code>
             </pre>
           );

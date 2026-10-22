@@ -10,9 +10,9 @@
 | Graphiques | Désactivés | Les gabarits ne sont pas branchés |
 | Export PDF / Word | Désactivé | Prévu après stabilisation du carnet |
 | Comptes utilisateurs | Présents | Inscription, connexion, session de 30 jours |
-| Réinitialisation du mot de passe | Absente | Pas d'envoi d'e-mail dans cette version ; créer un nouveau compte |
-| Suivi par notion, scores | Absents | Hors périmètre MVP |
-| Historique de discussion | Volatile | Conservé en mémoire, perdu au redémarrage |
+| Réinitialisation du mot de passe | Selon le serveur | Lien par e-mail si le serveur a la route `/auth/password/*` et un envoi d'e-mail configuré |
+| Suivi par notion, révisions | Présents | Gardés dans le navigateur (page **Révisions**) |
+| Historique de discussion | Local | Gardé dans le navigateur ; la mémoire de l'agent côté serveur reste volatile |
 
 Ces éléments sont signalés dans l'interface quand ils sont visibles. Aucun n'est
 simulé.
@@ -44,9 +44,9 @@ documentaire continue de fonctionner, mais aucune réponse ne peut être rédig�
 
 ### Mot de passe oublié
 
-Il n'y a pas encore de réinitialisation par e-mail. Contacte l'administrateur de
-l'instance, ou crée un nouveau compte : les documents d'un compte ne sont pas
-accessibles depuis un autre.
+Sur la page de connexion, clique sur **Mot de passe oublié ?** et indique ton
+adresse : un lien valable 30 minutes t'est envoyé. Si la page indique que la
+réinitialisation n'est pas activée sur cette instance, contacte l'administrateur.
 
 ### « Connecte-toi pour accéder à l'atelier »
 
