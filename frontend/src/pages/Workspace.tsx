@@ -37,6 +37,9 @@ export function Workspace() {
   // Affichage mobile uniquement : quel volet est visible (aucun effet sur la logique).
   const [volet, setVolet] = useState<"sources" | "chat" | "atelier">("chat");
 
+  /** Le volet Atelier est replié tant qu'aucun artefact n'a été ouvert. */
+  const [atelierOuvert, setAtelierOuvert] = useState(false);
+
   /**
    * Ouvre un artefact dans l'Atelier — uniquement au clic d'une carte de la
    * discussion. Rien ne s'affiche tout seul : l'Atelier reste vide tant que
@@ -50,7 +53,14 @@ export function Workspace() {
       setQuiz(artefact.quiz);
       setOutil("quiz");
     }
+    setAtelierOuvert(true);
     setVolet("atelier");
+  }, []);
+
+  /** Replie l'Atelier ; la carte de l'artefact dans la discussion le rouvre. */
+  const fermerAtelier = useCallback(() => {
+    setAtelierOuvert(false);
+    setVolet("chat");
   }, []);
 
   const envoyer = useCallback(
@@ -283,18 +293,28 @@ export function Workspace() {
     setResume("");
     setQuiz(null);
     setOutil("resume");
+    setAtelierOuvert(false);
+    setVolet("chat");
   };
 
   // Affichage mobile uniquement : quel volet est visible (aucun effet sur la logique).
-  const VOLETS = [
+  const VOLETS: {
+    cle: "sources" | "chat" | "atelier";
+    label: string;
+    compte: number | null;
+    nouveau: boolean;
+  }[] = [
     { cle: "sources", label: "Sources", compte: sources.length || null, nouveau: false },
     { cle: "chat", label: "Discussion", compte: null, nouveau: false },
-    { cle: "atelier", label: "Atelier", compte: null, nouveau: Boolean(resume || quiz) },
-  ] as const;
+    // L'onglet n'existe qu'une fois un artefact ouvert : sinon il n'a rien à montrer.
+    ...(atelierOuvert
+      ? [{ cle: "atelier" as const, label: "Atelier", compte: null, nouveau: false }]
+      : []),
+  ];
 
   return (
     <AppShell variant="full">
-      <div className="workspace" data-volet={volet}>
+      <div className="workspace" data-volet={volet} data-atelier={atelierOuvert ? "ouvert" : "ferme"}>
         <h1 className="sr-only">Atelier</h1>
         <div className="wk-tabs" role="tablist" aria-label="Volets de l'atelier">
           {VOLETS.map((element) => (
@@ -346,6 +366,7 @@ export function Workspace() {
           onAjouterResume={() => void ajouterResume()}
           onAjouterQuiz={() => void ajouterQuiz()}
           enregistrement={enregistrement}
+          onFermer={fermerAtelier}
         />
       </div>
     </AppShell>
