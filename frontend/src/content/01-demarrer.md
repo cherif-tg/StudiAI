@@ -2,13 +2,13 @@
 
 Nunya est un atelier d'apprentissage documentaire : tu déposes tes cours, tu poses
 des questions, et l'agent répond **uniquement** à partir de ce que tu as déposé.
-Il peut aussi produire un résumé ou un quiz, que tu choisis — ou non — de garder
+Il peut aussi produire un résumé ou un quiz, que tu choisis (ou non) de garder
 dans ton carnet.
 
 ## Ce dont tu as besoin
 
 - Un navigateur récent (Chrome, Firefox, Edge, Safari).
-- Un compte : une adresse e-mail et un mot de passe de 8 caractères minimum.
+- Un compte : une adresse e-mail et un mot de passe de 8 caractères minimum (l'icône en forme d'œil, dans le champ, affiche ou masque ce que tu tapes).
 - Des cours au format **PDF** (avec du texte sélectionnable) ou **Word (.docx)**.
 
 Chaque compte a ses propres documents et son propre carnet. Rien n'est partagé

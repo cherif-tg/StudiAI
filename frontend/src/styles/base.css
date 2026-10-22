@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Base — remise à zéro, typographie, accessibilité
+   Base — remise à zéro, typographie, accessibilité, mouvement
    ========================================================================== */
 
 *,
@@ -11,31 +11,37 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--topbar) + 16px);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--bg);
   color: var(--ink);
   font-family: var(--font-ui);
-  font-size: var(--text-md);
-  line-height: 1.55;
-  font-feature-settings: "kern", "liga";
+  font-size: var(--text-base);
+  line-height: 1.6;
+  font-feature-settings: "kern", "liga", "cv11";
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
 }
 
-/* Deux halos très diffus : la chaleur du sol, la profondeur de l'indigo. */
+/* Un léger lavis bleu en haut de page : de la profondeur, sans bruit. */
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
+  inset: 0 0 auto 0;
+  height: 420px;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(60vw 50vh at 12% -10%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
-    radial-gradient(50vw 45vh at 100% 0%, color-mix(in srgb, var(--info) 10%, transparent), transparent 65%);
+    radial-gradient(70vw 320px at 85% -80px, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%),
+    radial-gradient(50vw 260px at 0% -60px, color-mix(in srgb, var(--gold) 6%, transparent), transparent 70%);
 }
 
 h1,
@@ -44,17 +50,17 @@ h3,
 h4 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
   color: var(--ink);
   text-wrap: balance;
 }
 
-h1 { font-size: var(--text-3xl); }
+h1 { font-size: var(--text-3xl); letter-spacing: -0.025em; }
 h2 { font-size: var(--text-2xl); }
-h3 { font-size: var(--text-xl); }
-h4 { font-size: var(--text-lg); }
+h3 { font-size: var(--text-xl); font-weight: 650; }
+h4 { font-size: var(--text-lg); font-weight: 600; }
 
 p {
   margin: 0;
@@ -62,13 +68,14 @@ p {
 }
 
 a {
-  color: var(--info);
+  color: var(--accent);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+  transition: color var(--fast) var(--ease);
 }
 
 a:hover {
-  color: var(--accent);
+  color: var(--accent-strong);
 }
 
 strong { font-weight: 600; }
@@ -79,7 +86,7 @@ code,
 kbd,
 pre {
   font-family: var(--font-mono);
-  font-size: 0.92em;
+  font-size: 0.88em;
 }
 
 button {
@@ -90,6 +97,12 @@ button {
 
 button:disabled {
   cursor: not-allowed;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 img,
@@ -113,7 +126,7 @@ hr {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 /* --- Focus visible, jamais supprimé ------------------------------------ */
@@ -128,11 +141,13 @@ hr {
   left: -9999px;
   top: 0;
   z-index: 100;
-  background: var(--panel);
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--accent-ink);
   padding: var(--sp-3) var(--sp-4);
-  border-radius: 0 0 var(--r-sm) 0;
+  border-radius: 0 0 var(--r-md) 0;
   box-shadow: var(--shadow-md);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .skip-link:focus {
@@ -152,16 +167,43 @@ hr {
 
 *::-webkit-scrollbar-thumb {
   background: var(--line-strong);
-  border-radius: var(--r-pill);
+  border-radius: 10px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
-/* --- Animations --------------------------------------------------------- */
+/* --- Animations (courtes, faible amplitude) ---------------------------- */
 @keyframes nunya-fade-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes nunya-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nunya-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes nunya-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;

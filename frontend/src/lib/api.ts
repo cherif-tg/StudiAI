@@ -90,6 +90,29 @@ const json = (corps: unknown): RequestInit => ({
   body: JSON.stringify(corps),
 });
 
+/** La route n'existe pas sur ce serveur (fonction pas encore déployée côté backend). */
+export function routeAbsente(erreur: unknown): boolean {
+  return erreur instanceof ApiError && (erreur.status === 404 || erreur.status === 405 || erreur.status === 501);
+}
+
+/** Téléchargement d'un fichier produit par l'API (export de données). */
+async function telecharger(chemin: string): Promise<{ blob: Blob; nom: string }> {
+  let res: Response;
+  try {
+    res = await fetch(adresse(chemin), { credentials: "include" });
+  } catch {
+    throw new ApiError("Serveur injoignable. Vérifie qu'il est bien démarré.", 0);
+  }
+  if (!res.ok) throw new ApiError(await detailDeLaReponse(res), res.status);
+  // Un serveur qui renvoie l'interface (repli SPA) au lieu d'un fichier : route absente.
+  if ((res.headers.get("Content-Type") ?? "").includes("text/html")) {
+    throw new ApiError("Route absente sur ce serveur.", 404);
+  }
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const nom = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)?.[1] ?? "nunya-export.zip";
+  return { blob: await res.blob(), nom: decodeURIComponent(nom) };
+}
+
 export const api = {
   health: () => requete<Health>("/health", { timeoutMs: 6_000 }),
 
@@ -134,6 +157,30 @@ export const api = {
 
   createArtifact: (corps: { kind: ArtifactKind; title: string; content: string }) =>
     requete<Artifact>("/artifacts", json(corps)),
+
+  // --- Droits sur les données et mot de passe --------------------------
+  // Ces routes sont à ajouter au backend (voir README, « Intégration backend »).
+  // Tant qu'elles n'existent pas, l'interface le détecte (routeAbsente) et l'indique.
+
+  exporterDonnees: () => telecharger("/auth/me/export"),
+
+  supprimerCompte: (motDePasse: string) =>
+    requete<void>("/auth/me", { ...json({ mot_de_passe: motDePasse }), method: "DELETE" }),
+
+  motDePasseOublie: (email: string) =>
+    requete<{ ok: boolean }>("/auth/password/forgot", { ...json({ email }), timeoutMs: 20_000 }),
+
+  reinitialiserMotDePasse: (jeton: string, motDePasse: string) =>
+    requete<{ ok: boolean }>("/auth/password/reset", json({ jeton, mot_de_passe: motDePasse })),
+
+  avis: (corps: {
+    session_id: string;
+    message_id: string;
+    avis: "utile" | "inutile";
+    motif?: string;
+    question?: string;
+    reponse?: string;
+  }) => requete<{ ok: boolean }>("/chat/feedback", { ...json(corps), timeoutMs: 10_000 }),
 
   translate: (texte: string) =>
     requete<{ translation: string; target: string }>(

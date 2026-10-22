@@ -33,7 +33,7 @@ export function Carnet() {
             <h1 style={{ marginTop: 6 }}>Mon Nunyati</h1>
             <p>
               Ce que tu as choisi de garder. Chaque entrée correspond à un geste explicite de ta
-              part — rien n'arrive ici par accident.
+              part : rien n'arrive ici par accident.
             </p>
           </div>
           <div className="row gap-2">
@@ -65,14 +65,14 @@ export function Carnet() {
         {artefactsEtat === "loading" && !artefacts.length ? (
           <div className="artefact-grid">
             {[0, 1, 2].map((cle) => (
-              <div key={cle} className="skeleton" style={{ height: 148, borderRadius: 22 }} />
+              <div key={cle} className="skeleton" style={{ height: 148, borderRadius: "var(--r-lg)" }} />
             ))}
           </div>
         ) : null}
 
         {artefactsEtat === "error" ? (
           <div className="empty">
-            <h4>Carnet indisponible</h4>
+            <h2>Carnet indisponible</h2>
             <p>Le serveur n'a pas répondu. Tes artefacts enregistrés ne sont pas perdus.</p>
             <button className="btn btn--sm" onClick={() => void rafraichirArtefacts()}>
               <Icon name="rafraichir" size={14} />
@@ -83,7 +83,7 @@ export function Carnet() {
 
         {artefactsEtat === "ready" && !liste.length ? (
           <div className="empty" style={{ maxWidth: 560 }}>
-            <h4>{artefacts.length ? "Rien dans ce filtre" : "Ton carnet est vide"}</h4>
+            <h2>{artefacts.length ? "Rien dans ce filtre" : "Ton carnet est vide"}</h2>
             <p>
               {artefacts.length
                 ? "Change de filtre pour voir les autres artefacts."
@@ -138,7 +138,7 @@ export function Carnet() {
         ) : null}
 
         <p className="hint" style={{ marginTop: "var(--sp-6)" }}>
-          Carnet de <span className="mono">{user?.email}</span> — chaque entrée est liée à ton
+          Carnet de <span className="mono">{user?.email}</span>. Chaque entrée est liée à ton
           compte, pas à cet appareil.
         </p>
       </div>

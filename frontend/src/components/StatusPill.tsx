@@ -31,9 +31,9 @@ export function StatusPill() {
   }
 
   return (
-    <span className={`badge badge--${etat.tone}`} title={etat.titre}>
+    <span className={`badge badge--${etat.tone} status-pill`} title={etat.titre}>
       <span className={`dot${etat.live ? " dot--live" : ""}`} aria-hidden="true" />
-      {etat.label}
+      <span className="status-pill__label">{etat.label}</span>
     </span>
   );
 }

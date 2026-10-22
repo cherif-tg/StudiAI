@@ -31,18 +31,22 @@ Trois principes non négociables, qui expliquent la plupart des choix de code :
 | Domaine | État | Détail |
 |---|---|---|
 | Authentification | **Fonctionne** | Inscription, connexion, session cookie 30 jours, données isolées par compte |
+| Mot de passe oublié | **Fonctionne** | Lien à usage unique, 30 minutes ; sans SMTP, le lien est écrit dans le journal (dev) |
+| Droits sur les données | **Fonctionne** | Export ZIP (profil, documents, carnet) et suppression du compte avec mot de passe |
 | Dépôt de documents | **Fonctionne** | PDF, DOCX (tableaux inclus), TXT/MD ; indexation réelle |
 | Recherche documentaire | **Fonctionne** | ChromaDB + embeddings multilingues ; filtrage par source |
-| Chat avec outils | **Fonctionne** | Boucle function calling, 3 outils exposés |
+| Chat avec outils | **Fonctionne** | Boucle function calling, 3 outils exposés, passages cités renvoyés à l'interface |
 | Résumé / Quiz | **Fonctionne** | Via l'agent, affichés dans l'Atelier, non persistés |
 | Carnet | **Fonctionne** | Persistance à la demande, liste par compte, téléchargement protégé |
 | Modes de réponse | **Fonctionne** | standard, socratique, réflexion, précis |
-| Interface web | **Fonctionne** | Accueil, connexion, atelier 3 volets, carnet, réglages, documentation |
-| Documentation intégrée | **Fonctionne** | `/documentation`, 7 sections, recherche |
+| Avis sur les réponses | **Fonctionne** | `POST /chat/feedback`, un avis par message et par personne |
+| Contact | **Fonctionne** | `POST /contact`, gardé en base, un message toutes les 30 s par IP |
+| Interface web | **Fonctionne** | Accueil, atelier, carnet, révisions, réglages, documentation, pages légales |
+| Révisions espacées | **Fonctionne** | Calcul dans le navigateur (boîtes de Leitner) |
+| PWA | **Fonctionne** | Manifeste, service worker, invite d'installation, bandeau hors ligne |
 | Traduction éwé | **Non branchée** | Service écrit, `TRANSLATION_MODE=disabled` |
 | Fiche bilingue, export PDF/Word, graphiques | **Non branchés** | Boutons visibles, désactivés, avec explication |
-| Comptes : réinitialisation de mot de passe | **Absent** | Aucun envoi d'e-mail |
-| Historique de conversation | **Volatile** | En mémoire ; perdu au redémarrage |
+| Historique de conversation | **Local au navigateur** | Pas de stockage serveur ; la mémoire de l'agent repart à vide au redémarrage |
 
 Autrement dit : le cœur du produit est complet et testé. Ce qui reste touche aux
 extensions (langues locales, exports) et à l'exploitation (déploiement).
@@ -73,6 +77,7 @@ Cinq couches, à ne pas mélanger :
 | Routes HTTP | `backend/app/api/` | Valide l'entrée, vérifie le propriétaire, appelle un service. Aucune logique métier. |
 | Agent | `backend/app/agent/` | Décide quels outils appeler. Ne connaît ni HTTP ni SQL. |
 | Outils | `backend/app/tools/` | Une capacité = un fichier. Déclare son schéma JSON et `run()`. |
+| Intégration | `backend/app/integration/` | Routes ajoutées pour l'interface (export, suppression, mot de passe, contact, avis). Elles passent par un **adaptateur** (`integration_depot.py`) au lieu de toucher la base. |
 | Services | `backend/app/services/` | Briques techniques réutilisables (RAG, LLM, journal, documents). |
 | Interface | `frontend/src/` | Parle uniquement à `lib/api.ts`, jamais `fetch` directement. |
 
@@ -94,6 +99,8 @@ rédigée → `steps` renvoyés à l'interface pour afficher la trace.
 | `backend/app/services/rag.py` | Ingestion, recherche, suppression |
 | `backend/app/services/journal.py` | Schéma SQLite et toutes les requêtes |
 | `backend/app/api/guards.py` | Limites de taille, de stockage, de débit |
+| `backend/app/integration/` | Routes d'intégration (compte, contact, avis, passages) |
+| `backend/app/integration_depot.py` | Adaptateur entre ces routes et nos services |
 | `frontend/src/lib/api.ts` | Client HTTP typé, seul point de sortie réseau |
 | `frontend/src/styles/tokens.css` | Palette, typographie, espacements, thèmes |
 | `frontend/src/content/` | Documentation publique (Markdown, intégrée à l'app) |
@@ -180,12 +187,13 @@ Après une modification destinée à `http://127.0.0.1:8000`, reconstruire :
 
 ```powershell
 cd backend
-..\.venv\Scripts\python.exe -m pytest -q --timeout=90 tests/test_documents.py tests/test_orchestrator.py tests/test_api.py tests/test_guards.py tests/test_modes.py
+..\.venv\Scripts\python.exe -m pytest -q --timeout=90 tests
 ```
 
-37 tests, environ 20 secondes, **sans réseau et sans clé**. Ils couvrent la boucle
-de l'agent (avec un faux client LLM), l'extraction DOCX, l'authentification,
-l'isolation entre comptes et les garde-fous.
+49 tests, une vingtaine de secondes, **sans réseau et sans clé**. Ils couvrent la
+boucle de l'agent (avec un faux client LLM), l'extraction DOCX, l'authentification,
+l'isolation entre comptes, les garde-fous, les droits sur les données (export,
+suppression), la réinitialisation de mot de passe, le contact et les avis.
 
 Tests d'intégration, à lancer quand on touche au RAG ou aux prompts :
 
@@ -351,6 +359,10 @@ pendant le chargement.
 
 **Le modèle se télécharge une fois.** ~470 Mo dans `~/.cache/huggingface`. Sans
 réseau au premier lancement, le RAG ne démarre pas.
+
+**Les e-mails ne partent pas.** Sans `SMTP_HOST`, le lien de réinitialisation est
+écrit dans la sortie du serveur, pas envoyé. C'est voulu en développement ; en
+production, renseigner les variables `SMTP_*`.
 
 **`data/` est l'état réel.** Supprimer ce dossier efface les comptes, les
 documents indexés et les carnets. Ce n'est pas un cache.

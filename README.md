@@ -1,94 +1,164 @@
+<p align="center">
+  <img src="docs/images/nunya-logo.png" alt="Nunya, atelier d'apprentissage" width="360">
+</p>
+
 # Nunya
 
-Atelier d'apprentissage documentaire. Tu déposes tes cours, tu poses des
-questions, et l'agent répond **uniquement** à partir de tes documents — avec la
-source. Résumés et quiz se génèrent à la demande, et ne sont conservés que si tu
-le demandes.
+Atelier d'apprentissage documentaire né au Togo. On dépose ses cours (PDF, Word),
+on pose des questions, et l'agent répond **uniquement à partir de ces documents**,
+en citant ses sources. Il produit aussi des résumés et des quiz, que l'on garde
+dans un carnet et que l'on révise au bon moment.
+
+L'interface est une **application web progressive (PWA)** : elle s'installe sur un
+téléphone ou un ordinateur et garde le carnet consultable hors ligne.
 
 > Le dépôt s'appelle encore `StudiAI` sur GitHub ; le produit s'appelle **Nunya**
-> (« connaissance, sagesse » en éwé). Le renommage du dépôt viendra plus tard.
+> (« connaissance, sagesse » en éwé).
 
 ---
 
-## Ce que ça fait
+## 1. Ce que fait l'application
 
 - **Déposer** des PDF et des Word (tableaux inclus), indexés par un modèle
-  multilingue local.
+  multilingue qui tourne sur le serveur.
 - **Interroger** ses documents : recherche vectorielle, réponse rédigée à partir
   des passages trouvés, refus explicite hors corpus.
-- **Produire** un résumé ou un quiz, avec une trace des outils réellement appelés.
+- **Voir les sources** : passages cités sous chaque réponse, outils réellement
+  appelés, avis (👍/👎) pour signaler une réponse douteuse.
+- **Produire** un résumé ou un quiz, avec une trace des outils utilisés.
 - **Choisir un mode** : standard, tuteur socratique, réflexion, précis.
-- **Garder** ce qui compte dans un carnet personnel — jamais automatiquement.
-- **Un compte** : documents et carnet isolés, accessibles d'un appareil à l'autre.
+- **Réviser** : chaque question ratée revient selon un calendrier espacé
+  (1 jour, 3 jours, 1 semaine, 2 semaines, 1 mois).
+- **Un compte** : documents et carnet isolés, accessibles d'un appareil à l'autre,
+  export de ses données et suppression du compte.
 
-Ce qui n'est **pas** branché et qui le dit dans l'interface : traduction éwé,
-fiche bilingue, export PDF/Word, graphiques. Voir `docs/ETAT_DU_PROJET.md`.
+## 2. Pages et routes
 
----
+| Page | Route | Accès |
+|---|---|---|
+| Accueil | `/` | Public |
+| Connexion, inscription | `/connexion` | Public |
+| Mot de passe oublié, nouveau mot de passe | `/mot-de-passe-oublie`, `/reinitialiser?jeton=…` | Public |
+| Atelier : sources, discussion, résumé et quiz | `/atelier` | Compte |
+| Carnet : résumés et quiz enregistrés | `/carnet` | Compte |
+| Révisions espacées, suivi par notion | `/revisions` | Compte |
+| Réglages : thème, compte, mes données, installation | `/reglages` | Compte |
+| Documentation intégrée | `/documentation` | Public |
+| Confidentialité, conditions, à propos | `/confidentialite`, `/conditions`, `/a-propos` | Public |
 
-## Stack
+## 3. Stack
 
 | Brique | Choix |
 |---|---|
 | API | FastAPI + Uvicorn (Python 3.12/3.13) |
 | Agent | Boucle function calling, Groq (`openai/gpt-oss-120b`) |
 | Recherche | ChromaDB + `sentence-transformers` multilingue |
-| Données | SQLite (comptes, sources, artefacts) + fichiers sur disque |
-| Interface | React 19 + TypeScript + Vite, CSS maison (aucune lib d'UI) |
+| Données | SQLite (comptes, sources, artefacts, avis) + fichiers sur disque |
+| Interface | React 19 + TypeScript strict + Vite 8, CSS natif (aucune bibliothèque d'UI) |
+| PWA | `manifest.json` et service worker écrits à la main |
 | Déploiement | Interface statique (Vercel) + API conteneurisée |
 
----
-
-## Démarrage rapide
+## 4. Démarrage rapide
 
 ```powershell
+# 1. Dépendances Python (venv à la racine)
 uv venv .venv
 uv pip install --python .venv\Scripts\python.exe -r backend\requirements.txt -r backend\requirements-rag.txt -r backend\requirements-dev.txt
+
+# 2. Configuration serveur
 Copy-Item .env.example .env        # renseigner GROQ_API_KEY
-cd frontend; npm ci; npm run build; cd ..
-cd backend; ..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+
+# 3. Interface
+cd frontend
+npm ci
+npm run build
+cd ..
+
+# 4. Lancer
+cd backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
 
 <http://127.0.0.1:8000/> — le badge passe à « Prêt » quand le moteur est chargé
 (quelques secondes à plusieurs minutes selon la machine).
 
-Les scripts `scripts\demarrer.ps1`, `scripts\arreter.ps1` et
-`scripts\tunnel.ps1` couvrent le lancement, l'arrêt et la publication temporaire.
+En développement, l'interface se lance à part avec rechargement à chaud :
+`cd frontend; npm run dev` (port 5173, relais vers l'API sur 8000).
 
----
+Autres entrées : `scripts\demarrer.ps1`, `scripts\arreter.ps1`,
+`scripts\tunnel.ps1` (publication temporaire), `docker compose up --build`
+(conteneur unique, interface incluse).
 
-## Structure
+## 5. Structure
 
 ```
-backend/app/     api/ agent/ tools/ services/   (FastAPI, agent, RAG, SQLite)
+backend/app/     api/ agent/ tools/ services/ integration/   (FastAPI, agent, RAG, SQLite)
 backend/tests/   tests rapides, recettes RAG et agent
 frontend/        React + Vite (src/pages, src/components, src/styles, src/content)
-docs/            plan, recette, documentation technique, état du projet
+  public/        manifeste, service worker, icônes, emblème
+docs/            plan, recette, documentation technique, historique, intégration backend
 deploy/          fichiers de déploiement (Space Hugging Face)
 scripts/         démarrage, arrêt, tunnel, publication
 data/            état local : uploads, artefacts, Chroma, journal.db (non versionné)
 ```
 
----
+## 6. Configuration
 
-## Documentation
+Variables du serveur (`.env`, voir `.env.example`) :
+
+| Variable | Rôle |
+|---|---|
+| `GROQ_API_KEY` | Clé du fournisseur de modèle (obligatoire pour répondre) |
+| `CORS_ORIGINS` | Origines autorisées, séparées par des virgules |
+| `COOKIE_SAMESITE` | `lax` (même domaine) ou `none` (interface et API séparées) |
+| `APP_PUBLIC_URL` | Adresse publique, pour le lien de réinitialisation |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`, `SMTP_STARTTLS` | Envoi d'e-mails. Sans `SMTP_HOST`, le message est écrit dans le journal (développement) |
+| `CONTACT_DESTINATAIRE` | Adresse qui reçoit le formulaire de contact |
+| `MAX_UPLOAD_MB`, `MAX_STORAGE_MB`, `CHAT_RATE_LIMIT`, `CHAT_RATE_WINDOW_S` | Garde-fous d'exposition publique |
+
+Variables de l'interface (`frontend/.env`, voir `frontend/.env.example`) :
+`VITE_API_BASE_URL`, `VITE_CONTACT_ENDPOINT`, `VITE_CONTACT_EMAIL`,
+`VITE_EDITEUR_NOM`, `VITE_HEBERGEUR_NOM`.
+
+## 7. Tests
+
+```powershell
+cd backend
+..\.venv\Scripts\python.exe -m pytest -q --timeout=90 tests
+```
+
+49 tests, sans réseau ni clé : boucle de l'agent, extraction DOCX, authentification,
+isolation entre comptes, garde-fous, droits sur les données, contact et avis.
+
+Côté interface : `cd frontend; npm run verifier` (types, build, rendu sous jsdom).
+Les détails et les recettes sont dans [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## 8. Documentation
 
 | Document | Contenu |
 |---|---|
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | **À lire en premier** : état du code, architecture, conventions, workflow |
 | [`docs/ETAT_DU_PROJET.md`](docs/ETAT_DU_PROJET.md) | Où en est le projet, décisions prises, ce qui reste |
-| [`docs/PLAN_REALISATION_MVP_v2.md`](docs/PLAN_REALISATION_MVP_v2.md) | Plan d'exécution, sprints et portes de sortie |
-| [`docs/FRONTEND.md`](docs/FRONTEND.md) | Stack, structure, design system, contrat d'API |
+| [`docs/FRONTEND.md`](docs/FRONTEND.md) | Interface : pages, composants, design system, PWA, contrat d'API |
 | [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md) | Tunnel, Vercel, hébergeurs, cookies et CORS |
+| [`docs/INTEGRATION_BACKEND.md`](docs/INTEGRATION_BACKEND.md) | Routes ajoutées pour l'interface, et leur code |
+| [`docs/HISTORIQUE.md`](docs/HISTORIQUE.md) | Journal de la refonte de l'interface |
 | [`docs/RECETTE_MVP.md`](docs/RECETTE_MVP.md) | Mesures réelles : tests, RAG, agent, performances |
+| [`docs/PLAN_REALISATION_MVP_v2.md`](docs/PLAN_REALISATION_MVP_v2.md) | Plan d'exécution, sprints et portes de sortie |
 | `docs/Nunya_Cahier_des_charges_MVP.docx` | Périmètre fonctionnel du MVP |
 
 La documentation destinée aux utilisateurs est intégrée à l'application :
 `/documentation`.
 
----
+## 9. État du projet
 
-## Contribuer
+Fonctionnent de bout en bout : comptes, dépôt et indexation, chat sourcé, résumé,
+quiz, carnet, révisions, export et suppression du compte, contact, avis.
+
+Ne sont pas encore branchés, et l'interface le dit : traduction éwé, fiche
+bilingue, export PDF/Word, graphiques. Voir `docs/ETAT_DU_PROJET.md`.
+
+## 10. Contribuer
 
 Les règles sont dans [`CONTRIBUTING.md`](CONTRIBUTING.md) : conventions, tests à
 lancer, ce qu'on ne commite jamais.

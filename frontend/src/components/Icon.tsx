@@ -28,7 +28,16 @@ type NomIcone =
   | "menu"
   | "cle"
   | "horloge"
-  | "info";
+  | "info"
+  | "lien"
+  | "copier"
+  | "pouceHaut"
+  | "pouceBas"
+  | "chevronG"
+  | "chevronD"
+  | "oeil"
+  | "oeilBarre"
+  | "crayon";
 
 const TRACES: Record<NomIcone, ReactNode> = {
   discussion: <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v6a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.4A.6.6 0 0 1 5 18v-3.2A2.5 2.5 0 0 1 4 12.7Z" />,
@@ -54,6 +63,15 @@ const TRACES: Record<NomIcone, ReactNode> = {
   cle: <><circle cx="8" cy="12" r="3.5" /><path d="M11.5 12H20" /><path d="M17 12v3M20 12v2" /></>,
   horloge: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 1.8" /></>,
   info: <><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5.5" /><circle cx="12" cy="8" r=".9" fill="currentColor" stroke="none" /></>,
+  copier: <><rect x="8.5" y="8.5" width="11" height="11" rx="2.2" /><path d="M15.5 8.5V6.2A1.7 1.7 0 0 0 13.8 4.5H6.2A1.7 1.7 0 0 0 4.5 6.2v7.6a1.7 1.7 0 0 0 1.7 1.7h2.3" /></>,
+  pouceHaut: <><path d="M7.5 10.5v9H5.2a1.2 1.2 0 0 1-1.2-1.2v-6.6a1.2 1.2 0 0 1 1.2-1.2Z" /><path d="M7.5 10.5 11 4.2a1.8 1.8 0 0 1 3.3 1.3l-.8 3.5h4.6a2 2 0 0 1 2 2.4l-1.3 6.3a2.2 2.2 0 0 1-2.2 1.8H7.5" /></>,
+  pouceBas: <><path d="M7.5 13.5v-9H5.2A1.2 1.2 0 0 0 4 5.7v6.6a1.2 1.2 0 0 0 1.2 1.2Z" /><path d="M7.5 13.5 11 19.8a1.8 1.8 0 0 0 3.3-1.3l-.8-3.5h4.6a2 2 0 0 0 2-2.4l-1.3-6.3a2.2 2.2 0 0 0-2.2-1.8H7.5" /></>,
+  chevronG: <path d="m14.5 6-6 6 6 6" />,
+  chevronD: <path d="m9.5 6 6 6-6 6" />,
+  oeil: <><path d="M2.8 12S6.2 5.5 12 5.5 21.2 12 21.2 12 17.8 18.5 12 18.5 2.8 12 2.8 12Z" /><circle cx="12" cy="12" r="3" /></>,
+  oeilBarre: <><path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c5.8 0 9.2 6.5 9.2 6.5a16 16 0 0 1-2.6 3.4" /><path d="M14.1 14.2A3 3 0 0 1 9.8 9.9" /><path d="M6.4 7.4C4 9 2.8 12 2.8 12s3.4 6.5 9.2 6.5a9 9 0 0 0 4.4-1.1" /><path d="m4 4 16 16" /></>,
+  crayon: <><path d="M15.2 5.3 18.7 8.8" /><path d="M4.5 19.5 5.3 15.6 16 4.9a1.7 1.7 0 0 1 2.4 0l.7.7a1.7 1.7 0 0 1 0 2.4L8.4 18.7Z" /></>,
+  lien: <><path d="M10 14a4 4 0 0 0 5.7 0l3.1-3.1a4 4 0 0 0-5.7-5.7l-1.2 1.2" /><path d="M14 10a4 4 0 0 0-5.7 0l-3.1 3.1a4 4 0 0 0 5.7 5.7l1.2-1.2" /></>,
 };
 
 export function Icon({

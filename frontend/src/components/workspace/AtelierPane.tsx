@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { ArtifactGlyph } from "../ArtifactGlyph";
 import { Icon } from "../Icon";
 import { Markdown } from "../Markdown";
+import { useAuth } from "../../context/AuthProvider";
+import { noterReponse } from "../../lib/revision";
 import type { Quiz } from "../../lib/types";
 
 export type CleOutil = "resume" | "quiz" | "graphique" | "fiche" | "export";
@@ -64,6 +66,7 @@ function LecteurQuiz({
   const [index, setIndex] = useState(0);
   const [choix, setChoix] = useState<Record<number, number>>({});
   const [termine, setTermine] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     setIndex(0);
@@ -162,7 +165,11 @@ function LecteurQuiz({
               className="quiz-option"
               data-state={etat}
               disabled={repondu}
-              onClick={() => setChoix((precedent) => ({ ...precedent, [index]: i }))}
+              onClick={() => {
+                setChoix((precedent) => ({ ...precedent, [index]: i }));
+                // Révision espacée : une question ratée reviendra au bon moment.
+                if (user) noterReponse(user.id, quiz.title, question, i === question.answer_index);
+              }}
             >
               <span className="quiz-option__letter">{String.fromCharCode(65 + i)}</span>
               <span>{reponse}</span>
@@ -216,10 +223,10 @@ export function AtelierPane({
   return (
     <section className="pane pane--atelier" aria-label="Atelier">
       <div className="pane__head">
-        <span className="pane__title">
+        <h2 className="pane__title">
           <Icon name="atelier" size={15} />
           Atelier
-        </span>
+        </h2>
         <span className="badge">Sans enregistrement</span>
       </div>
 
@@ -233,7 +240,7 @@ export function AtelierPane({
               aria-pressed={outil === element.cle}
               data-soon={bientot}
               onClick={() => setOutil(element.cle)}
-              title={bientot ? `${element.label} — bientôt disponible` : element.label}
+              title={bientot ? `${element.label} (bientôt disponible)` : element.label}
             >
               <ArtifactGlyph kind={element.icone} size={20} />
               {element.label}
@@ -271,7 +278,7 @@ export function AtelierPane({
             </>
           ) : (
             <div className="empty">
-              <h4>Aucun résumé pour l'instant</h4>
+              <h3>Aucun résumé pour l'instant</h3>
               <p>
                 Demande « fais-moi un résumé » dans la discussion : le résultat apparaîtra ici,
                 sans être enregistré.
@@ -285,7 +292,7 @@ export function AtelierPane({
             <LecteurQuiz quiz={quiz} onAjouter={onAjouterQuiz} enregistrement={enregistrement} />
           ) : (
             <div className="empty">
-              <h4>Aucun quiz pour l'instant</h4>
+              <h3>Aucun quiz pour l'instant</h3>
               <p>
                 Demande « fais-moi un quiz » dans la discussion : il sera jouable ici, sans être
                 enregistré.
