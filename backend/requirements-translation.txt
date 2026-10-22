@@ -1,5 +1,0 @@
-# Traduction locale NLLB-200 + LoRA (mode TRANSLATION_MODE=local)
-torch>=2.3
-transformers>=4.44
-peft>=0.12
-sentencepiece>=0.2

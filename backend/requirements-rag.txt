@@ -1,3 +1,0 @@
-# Brique RAG (lourde) — à remplacer/compléter par le pipeline OpenMind (re-ranking cross-encoder)
-chromadb>=0.5
-sentence-transformers>=3.0

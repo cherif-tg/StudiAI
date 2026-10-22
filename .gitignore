@@ -1,18 +1,23 @@
-.env
-__pycache__/
-*.pyc
-.venv/
-.pytest_cache/
+# Dépendances et builds
 node_modules/
 dist/
-frontend/dist-smoke/
-tools/
-data/uploads/*
-data/artifacts/*
-data/chroma/*
-data/*.db
-!data/**/.gitkeep
-.zwork/
+dist-smoke/
 
-# Notes personnelles, hors projet
-pitch.txt
+# Configuration locale (garder .env.example)
+.env
+.env.*
+!.env.example
+
+# Python (integration-backend)
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Éditeurs et systèmes
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Démo locale (hors projet)
+.demo-artifact/
