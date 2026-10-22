@@ -2445,3 +2445,46 @@
     display: none;
   }
 }
+
+/* --- Atelier replié par défaut -------------------------------------------
+   Le troisième volet ne sert qu'aux artefacts : il reste fermé tant que
+   l'apprenant n'a pas cliqué une carte dans la discussion. La grille passe de
+   deux à trois colonnes, avec une transition pour éviter le saut brutal. */
+
+.workspace {
+  transition: grid-template-columns 260ms var(--ease);
+}
+
+.pane--atelier {
+  min-width: 0;
+  transition: opacity 180ms var(--ease);
+}
+
+.workspace[data-atelier="ferme"] {
+  grid-template-columns: 308px minmax(0, 1fr) 0;
+}
+
+.workspace[data-atelier="ferme"] .pane--atelier {
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  border-width: 0;
+  padding: 0;
+}
+
+@media (max-width: 1180px) {
+  .workspace[data-atelier="ferme"] {
+    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-areas: "sources chat";
+  }
+  .workspace[data-atelier="ferme"] .pane--atelier {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .workspace[data-atelier="ferme"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "tabs" "pane";
+  }
+}

@@ -209,6 +209,7 @@ export function AtelierPane({
   onAjouterResume,
   onAjouterQuiz,
   enregistrement,
+  onFermer,
 }: {
   outil: CleOutil;
   setOutil: (outil: CleOutil) => void;
@@ -217,6 +218,8 @@ export function AtelierPane({
   onAjouterResume: () => void;
   onAjouterQuiz: () => void;
   enregistrement: boolean;
+  /** Replie le volet ; il se rouvre en cliquant la carte d'un artefact. */
+  onFermer?: () => void;
 }) {
   const label = OUTILS.find((o) => o.cle === outil)?.label ?? "Résumé";
 
@@ -228,6 +231,17 @@ export function AtelierPane({
           Atelier
         </h2>
         <span className="badge">Sans enregistrement</span>
+        {onFermer ? (
+          <button
+            type="button"
+            className="btn btn--quiet btn--icon btn--sm"
+            onClick={onFermer}
+            aria-label="Replier l'atelier"
+            title="Replier l'atelier"
+          >
+            <Icon name="fermer" size={14} />
+          </button>
+        ) : null}
       </div>
 
       <div className="tools" role="toolbar" aria-label="Outils de l'atelier">
