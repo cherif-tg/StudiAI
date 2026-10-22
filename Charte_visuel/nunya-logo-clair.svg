@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 72" width="480" height="144" role="img" aria-label="Nunya">
-  <g transform="translate(4 4)" fill="none" stroke-width="4" stroke-linecap="round">
-    <path d="M32 54V28" stroke="#5C6B4F"/>
-    <path d="M32 28C12 28 12 6 29 4" stroke="#5C6B4F"/>
-    <path d="M32 32C52 32 52 12 37 8" stroke="#A6472E"/>
-  </g>
-  <text x="82" y="50" font-family="Fraunces, Georgia, serif" font-weight="600" font-size="44" fill="#1B2A2E">Nunya</text>
-</svg>
