@@ -280,8 +280,8 @@ export function AtelierPane({
             <div className="empty">
               <h3>Aucun résumé pour l'instant</h3>
               <p>
-                Demande « fais-moi un résumé » dans la discussion : le résultat apparaîtra ici,
-                sans être enregistré.
+                Quand l'agent produit un résumé, une carte apparaît dans la discussion.
+                Clique-la pour l'ouvrir ici — rien ne s'affiche automatiquement.
               </p>
             </div>
           )
@@ -294,8 +294,8 @@ export function AtelierPane({
             <div className="empty">
               <h3>Aucun quiz pour l'instant</h3>
               <p>
-                Demande « fais-moi un quiz » dans la discussion : il sera jouable ici, sans être
-                enregistré.
+                Quand l'agent produit un quiz, une carte apparaît dans la discussion.
+                Clique-la pour le jouer ici — rien ne s'affiche automatiquement.
               </p>
             </div>
           )
