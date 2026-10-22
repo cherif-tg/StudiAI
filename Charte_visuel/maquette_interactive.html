@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maquette interactive — agent éducatif</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Source+Serif+4:wght@400;600&display=swap">
+<style>
+:root{--bg:#E3E6E4;--dot:#C9CFCC;--panel:#fff;--side:#F5F7F6;--line:#D5DAD7;--ink:#1D2733;--muted:#5E6B76;--green:#1F5B4B;--on:#fff;--gs:#DDEBE5;--ochre:#C8931A;--os:#F6ECD3;--red:#A63D3D;--rs:#F4DFDD;--warn:#8A6510;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14181B;--dot:#252C31;--panel:#1C2226;--side:#182024;--line:#2E373C;--ink:#E6EAEC;--muted:#93A0A8;--green:#6FB79F;--on:#10241D;--gs:#22382F;--ochre:#E0B04A;--os:#3A3120;--red:#E08A8A;--rs:#3B2626;--warn:#E0B04A}}
+:root[data-theme="dark"]{--bg:#14181B;--dot:#252C31;--panel:#1C2226;--side:#182024;--line:#2E373C;--ink:#E6EAEC;--muted:#93A0A8;--green:#6FB79F;--on:#10241D;--gs:#22382F;--ochre:#E0B04A;--os:#3A3120;--red:#E08A8A;--rs:#3B2626;--warn:#E0B04A}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg) radial-gradient(var(--dot) 1px,transparent 1px) 0 0/20px 20px;color:var(--ink);font:14px/1.5 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+.canvas{padding:24px;overflow-x:auto}
+.label{width:1180px;margin:0 auto 6px;font-size:12px;color:var(--muted)}
+.frame{width:1180px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 2px rgba(20,30,40,.08),0 8px 24px rgba(20,30,40,.06);overflow:hidden}
+.top{height:50px;display:flex;align-items:center;gap:22px;padding:0 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px}
+.mark{width:22px;height:22px;background:var(--green);border-radius:4px;position:relative}
+.mark:after{content:"";position:absolute;left:5px;right:5px;top:6px;bottom:5px;border:2px solid var(--on);border-top-width:3px;border-radius:1px}
+.tabs{display:flex;gap:4px;height:100%}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:0 12px;color:var(--muted)}
+.tabs .on{color:var(--ink);font-weight:600;border-color:var(--green)}
+.sp{flex:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden;font-size:13px}
+.seg button{background:none;border:0;padding:3px 11px;color:var(--muted)}
+.seg .on{background:var(--gs);color:var(--green);font-weight:600}
+.av{width:28px;height:28px;border-radius:50%;background:var(--ochre);color:#1D2733;display:grid;place-items:center;font-weight:600;font-size:13px}
+.cols{display:grid;grid-template-columns:250px 1fr 350px;height:610px}
+.cols>section{display:flex;flex-direction:column;min-height:0}
+.cols>section+section{border-left:1px solid var(--line)}
+.hd{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:15px}
+.btn{font-size:13px;padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--panel)}
+.btn.p{background:var(--green);border-color:var(--green);color:var(--on);font-weight:500}
+button:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.src{background:var(--side)}
+.docs{overflow:auto}
+.doc{display:flex;gap:10px;padding:10px 16px;border-top:1px solid var(--line);width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0}
+.doc i{width:14px;height:14px;margin-top:3px;border:1.5px solid var(--green);border-radius:3px;background:var(--green);flex:none}
+.doc i.off{background:transparent;border-color:var(--muted)}
+.doc small{display:block;color:var(--muted);font-size:12px}
+.ok{color:var(--green)}.wait{color:var(--warn)}
+.note{margin-top:auto;padding:12px 16px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.msgs{flex:1;overflow:auto;padding:6px 26px;display:flex;flex-direction:column;gap:16px}
+.me{align-self:flex-end;max-width:70%;background:var(--gs);padding:9px 13px;border-radius:10px 10px 2px 10px}
+.ag{max-width:92%;border-left:3px solid var(--green);padding:2px 0 2px 14px}
+.ag p{margin:0 0 8px}
+.cite{font-size:11px;font-weight:600;color:var(--green);background:var(--gs);border-radius:3px;padding:0 5px}
+.refs{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{font-size:12.5px;padding:4px 10px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--green)}
+.chip:hover{background:var(--gs)}
+.comp{margin:8px 26px 18px;display:flex;gap:8px}
+.comp input{flex:1;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.atl{background:var(--side)}
+.tools{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+.tool{font-size:13px;padding:5px 11px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+.tool.on{background:var(--green);border-color:var(--green);color:var(--on)}
+.body{flex:1;min-height:0;overflow:auto;padding:0 16px}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px 16px;font-family:"Source Serif 4",Georgia,serif;margin-top:8px}
+.sheet h3{margin:0 0 2px;font-size:18px}
+.sheet .m{font:12px "Public Sans",system-ui,sans-serif;color:var(--muted);margin-bottom:10px}
+.sheet p{margin:0 0 8px;font-size:14px;line-height:1.55}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.two h4{margin:0 0 6px;font:600 12px "Public Sans",system-ui,sans-serif;color:var(--green)}
+.sk{height:8px;border-radius:2px;background:var(--line);margin:0 0 9px}
+.warn{margin-top:8px;font:12px "Public Sans",system-ui,sans-serif;color:var(--warn);background:var(--os);padding:6px 9px;border-radius:3px}
+.act{display:flex;gap:8px;padding:12px 16px 16px}
+.sg{font-size:12px;color:var(--muted);margin:2px 0 0}
+.opt{display:block;width:100%;text-align:left;padding:8px 11px;margin:6px 0;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+.opt.good{border-color:var(--green);background:var(--gs)}.opt.bad{border-color:var(--red);background:var(--rs)}
+.pane{padding:0 20px 20px;overflow:auto}
+.pane h3{margin:0 0 8px;font-size:15px}
+.n{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line)}
+.bar{grid-column:1/3;height:6px;background:var(--line);border-radius:3px}
+.bar u{display:block;height:100%;border-radius:3px;background:var(--green)}
+.st{font-size:12px;font-weight:600}.g{color:var(--green)}.o{color:var(--warn)}.r{color:var(--red)}
+.rev{background:var(--rs);border-radius:4px;padding:11px 13px;margin-bottom:10px}
+.rev b{display:block}.rev span{font-size:12px;color:var(--muted)}
+.art{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}
+.art small{color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:9px 16px;border-radius:5px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="canvas"><div class="label">Maquette interactive. Aucun modèle derrière : les réponses sont des exemples.</div><div class="frame" id="app"></div></div>
+<input type="file" id="up" multiple hidden accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png">
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const QZ=[["Où se déroule la phase claire ?",["Dans les thylakoïdes","Dans le stroma","Dans la mitochondrie"]],["Quel produit de la phase claire alimente le cycle de Calvin ?",["L'ATP","Le glucose","Le dioxygène"]],["Que devient la photosynthèse sans lumière ?",["Elle s'accélère","Elle ralentit puis s'arrête","Elle reste identique"]]];
+const ANS=[0,0,1];
+const DS=[["Photosynthèse selon la lumière",[10,35,60,80,85],["0","25","50","75","100"]],["Activité au cours de la journée",[20,75,90,30,0],["6 h","10 h","14 h","18 h","22 h"]]];
+const S={view:'atelier',tool:'fiche',lang:'Français',sum:0,ds:0,qi:0,qa:null,qs:0,done:0,scores:[55,60,72,80],
+docs:[{n:'Chapitre 3 – Photosynthèse.pdf',m:'24 pages',on:1,st:1},{n:'Fiche respiration.docx',m:'3 pages',on:1,st:1},{n:'Cours SVT (photo).jpg',m:'',on:0,st:0}],
+arts:[["Fiche de révision, bilingue","PDF, 28 sept."],["Résumé du chapitre 3","28 sept."],["Quiz sur la photosynthèse","29 sept."]],
+msgs:[{r:'me',t:"Pourquoi la photosynthèse s'arrête-t-elle la nuit ?"},{r:'ag',t:"Sans lumière, la phase claire ne produit plus l'ATP ni le NADPH dont le cycle de Calvin a besoin. Il ralentit alors, puis s'arrête <span class=cite>1</span>. La plante continue de respirer <span class=cite>2</span>.",refs:["Chapitre 3 – Photosynthèse.pdf, p. 14","Fiche respiration.docx, p. 2"],chips:["Fais-moi un quiz","Résume le chapitre","Trace un graphique"]}]};
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('show'),2200)};
+const chip=(a,v,t)=>`<button class="chip" data-a="${a}" data-v="${E(v)}">${E(t)}</button>`;
+function bars(v,l){const w=330/v.length,bw=Math.min(40,w-24);let s='<svg viewBox="0 0 330 200" width="100%" role="img" aria-label="Graphique en barres"><g stroke="var(--line)"><line x1="6" x2="324" y1="20" y2="20"/><line x1="6" x2="324" y1="90" y2="90"/><line x1="6" x2="324" y1="160" y2="160"/></g>';v.forEach((x,i)=>{const h=x*1.4,cx=w*i+w/2;s+=`<rect x="${cx-bw/2}" y="${160-h}" width="${bw}" height="${h}" rx="2" fill="var(--green)"/><text x="${cx}" y="${154-h}" font-size="12" font-weight="600" text-anchor="middle" fill="var(--ink)">${x}</text><text x="${cx}" y="178" font-size="11" text-anchor="middle" fill="var(--muted)">${l[i]}</text>`});return s+'</svg>'}
+function topbar(){return`<div class="top"><div class="brand"><div class="mark"></div>Nom provisoire</div><div class="tabs">${['atelier','carnet'].map(v=>`<button data-a="view" data-v="${v}" class="${S.view==v?'on':''}">${v=='atelier'?'Atelier':'Carnet'}</button>`).join('')}</div><div class="sp"></div><div class="seg">${['Français','Éwé','Kabiyè'].map(l=>`<button data-a="lang" data-v="${l}" class="${S.lang==l?'on':''}">${l}</button>`).join('')}</div><div class="av">K</div></div>`}
+function sources(){return`<section class="src"><div class="hd">Sources <button class="btn" data-a="add">Ajouter</button></div><div class="docs">${S.docs.map((d,i)=>`<button class="doc" data-a="doc" data-v="${i}"><i class="${d.on?'':'off'}"></i><div>${E(d.n)}<small>${d.st?`<span class=ok>Indexé</span>${d.m?', '+d.m:''}`:'<span class=wait>Lecture du texte en cours</span>'}</small></div></button>`).join('')}</div><div class="note">Vos documents restent privés et ne sont visibles que dans votre session.</div></section>`}
+function chat(){return`<section><div class="hd">Discussion</div><div class="msgs" id="msgs">${S.msgs.map(m=>m.r=='me'?`<div class="me">${E(m.t)}</div>`:`<div class="ag"><p>${m.t}</p>${m.refs?`<div class="refs">${m.refs.map((r,i)=>`${i+1}. ${r}<br>`).join('')}</div>`:''}${m.chips?`<div class="chips">${m.chips.map(c=>chip('ask',c,c)).join('')}</div>`:''}</div>`).join('')}</div><div class="comp"><input id="q" placeholder="Posez une question sur vos sources" aria-label="Votre question"><button class="btn p" data-a="send">Envoyer</button></div></section>`}
+function panel(){const t=S.tool;
+if(t=='resume')return`<p class="sg">Suggestions</p><div class="chips">${chip('sum',0,'Résumé court')}${chip('sum',1,'Résumé détaillé')}</div><div class="sheet"><h3>Résumé du chapitre 3</h3><div class="m">${S.sum?'Version détaillée':'Version courte'}</div><p>La photosynthèse convertit l'énergie lumineuse en énergie chimique dans les chloroplastes.</p>${S.sum?'<p>La phase claire, dans les thylakoïdes, produit l\'ATP et le NADPH. Le cycle de Calvin, dans le stroma, les utilise pour fabriquer des sucres. Sans lumière, la phase claire s\'arrête et le cycle ralentit.</p>':''}</div>`;
+if(t=='quiz'){if(S.done)return`<div class="sheet"><h3>Quiz terminé</h3><p>Score : ${S.qs} sur ${QZ.length}. Ce résultat est ajouté au Carnet.</p></div><div class="chips" style="margin-top:10px">${chip('quizgo',0,'Rejouer')}${chip('view','carnet','Voir le Carnet')}</div>`;const q=QZ[S.qi];return`<p class="sg">Question ${S.qi+1} sur ${QZ.length}</p><div class="sheet"><h3 style="font-size:16px">${q[0]}</h3>${q[1].map((o,i)=>`<button class="opt ${S.qa==null?'':i==ANS[S.qi]?'good':i==S.qa?'bad':''}" data-a="opt" data-v="${i}">${o}</button>`).join('')}${S.qa!=null?`<div class="warn">${S.qa==ANS[S.qi]?'Bonne réponse.':'Réponse incorrecte.'} Voir le passage du cours, p. 14.</div>`:''}</div>${S.qa!=null?`<div class="chips" style="margin-top:10px">${chip('next',0,S.qi<QZ.length-1?'Question suivante':'Voir le résultat')}</div>`:''}`}
+if(t=='graphique')return`<p class="sg">Suggestions</p><div class="chips">${chip('ds',0,'Effet de la lumière')}${chip('ds',1,'Activité sur 24 h')}</div><div class="sheet"><h3 style="font-size:16px">${DS[S.ds][0]}</h3>${bars(DS[S.ds][1],DS[S.ds][2])}</div>`;
+if(t=='export')return`<p class="sg">Suggestions</p><div class="chips">${chip('exp','PDF','Fiche en PDF')}${chip('exp','Word','Fiche en Word')}${chip('exp','Bilingue','Version bilingue')}</div><div class="sheet"><h3 style="font-size:16px">Exporter</h3><p>Choisissez un format. Le fichier reprend le contenu de la fiche et renvoie aux passages sources.</p></div>`;
+return`<p class="sg">Suggestions</p><div class="chips">${chip('ask','Ajoute un schéma','Ajouter un schéma')}${chip('ask','Simplifie la fiche','Simplifier')}</div><div class="sheet"><h3>La photosynthèse</h3><div class="m">Fiche de révision, chapitre 3</div><div class="two"><div><h4>Français</h4><p>La photosynthèse transforme l'énergie lumineuse en énergie chimique, en deux phases : la phase claire et le cycle de Calvin.</p></div><div><h4>${S.lang=='Français'?'Éwé':S.lang}</h4><div class="sk" style="width:96%"></div><div class="sk" style="width:88%"></div><div class="sk" style="width:92%"></div><div class="sk" style="width:60%"></div></div></div><div class="warn">Traduction générée automatiquement, à relire avant usage.</div></div>`}
+function atelier(){return`<section class="atl"><div class="hd">Atelier</div><div class="tools">${[['resume','Résumé'],['quiz','Quiz'],['graphique','Graphique'],['fiche','Fiche bilingue'],['export','Export']].map(x=>`<button class="tool ${S.tool==x[0]?'on':''}" data-a="tool" data-v="${x[0]}">${x[1]}</button>`).join('')}</div><div class="body">${panel()}</div><div class="act"><button class="btn p" data-a="exp" data-v="PDF">Télécharger en PDF</button><button class="btn" data-a="art">Ajouter au Carnet</button></div></section>`}
+function carnet(){return`<div class="cols" style="grid-template-columns:1fr 1fr 1fr"><section class="pane"><div class="hd" style="padding:14px 0 6px">Notions</div>${[['Phase claire','Maîtrisée','g',90,'var(--green)'],['Cycle de Calvin','En cours','o',60,'var(--ochre)'],['Respiration cellulaire','À revoir','r',30,'var(--red)']].map(n=>`<div class="n"><span>${n[0]}</span><span class="st ${n[2]}">${n[1]}</span><div class="bar"><u style="width:${n[3]}%;background:${n[4]}"></u></div></div>`).join('')}</section><section class="pane"><div class="hd" style="padding:14px 0 6px">Résultats des quiz</div>${bars(S.scores.slice(-5),S.scores.slice(-5).map((_,i,a)=>'Quiz '+(S.scores.length-a.length+i+1)))}</section><section class="pane"><div class="hd" style="padding:14px 0 6px">À réviser aujourd'hui</div><div class="rev"><b>Respiration cellulaire</b><span>3 erreurs au dernier quiz</span><div style="margin-top:9px"><button class="btn p" data-a="quizgo">Lancer un quiz court</button></div></div><h3 style="margin-top:18px">Artefacts</h3>${S.arts.map(a=>`<div class="art"><span>${E(a[0])}</span><small>${a[1]}</small></div>`).join('')}</section></div>`}
+function render(){$("#app").innerHTML=topbar()+(S.view=='atelier'?`<div class="cols">${sources()}${chat()}${atelier()}</div>`:carnet());const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight}
+function reply(t){const s=t.toLowerCase(),r={t:"Ceci est une maquette : aucun modèle ne répond ici. Voici ce que l'agent proposerait.",chips:["Résume le chapitre","Fais-moi un quiz","Trace un graphique"]};
+if(/quiz|question|teste/.test(s)){S.tool='quiz';S.qi=0;S.qa=null;S.qs=0;S.done=0;r.t="J'ouvre le Quiz dans l'Atelier. Chaque correction renvoie au passage du cours.";r.chips=["Résume le chapitre"]}
+else if(/r[ée]sum/.test(s)){S.tool='resume';r.t="Le résumé est prêt dans l'Atelier, en version courte ou détaillée.";r.chips=["Fais-moi un quiz"]}
+else if(/graph|courbe|sch[ée]ma/.test(s)){S.tool='graphique';r.t="Graphique généré dans l'Atelier à partir des données du chapitre.";r.chips=["Fais-moi un quiz"]}
+else if(/fiche|traduc|[ée]w[ée]|kabiy/.test(s)){S.tool='fiche';r.t="La fiche bilingue est dans l'Atelier. La traduction est à relire par un locuteur natif.";r.chips=["Exporte en PDF"]}
+else if(/calvin|nuit|lumi|atp/.test(s)){r.t="Le cycle de Calvin dépend de l'ATP produit par la phase claire <span class=cite>1</span>.";r.refs=["Chapitre 3 – Photosynthèse.pdf, p. 14"]}
+return r}
+function send(t){t=(t||'').trim();if(!t)return;S.msgs.push({r:'me',t});render();setTimeout(()=>{S.msgs.push(Object.assign({r:'ag'},reply(t)));render();const q=$('#q');q&&q.focus()},600)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+if(a=='view'){S.view=v}else if(a=='tool'){S.tool=v}else if(a=='lang'){S.lang=v}
+else if(a=='add'){$('#up').click();return}
+else if(a=='doc'){S.docs[v].on=S.docs[v].st?!S.docs[v].on:0}
+else if(a=='ask'){send(v);return}
+else if(a=='send'){const q=$('#q');send(q.value);return}
+else if(a=='sum'){S.sum=+v}else if(a=='ds'){S.ds=+v}
+else if(a=='opt'){if(S.qa!=null)return;S.qa=+v;if(+v==ANS[S.qi])S.qs++}
+else if(a=='next'){if(S.qi<QZ.length-1){S.qi++;S.qa=null}else{S.done=1;S.scores.push(Math.round(S.qs/QZ.length*100))}}
+else if(a=='quizgo'){S.view='atelier';S.tool='quiz';S.qi=0;S.qa=null;S.qs=0;S.done=0}
+else if(a=='exp'){toast('Export '+v+' simulé : la maquette ne génère pas de fichier.');return}
+else if(a=='art'){S.arts.unshift(['Fiche de révision, '+S.lang,'30 sept.']);toast('Fiche ajoutée au Carnet.');return}
+render()});
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='q'){send(e.target.value)}});
+$('#up').addEventListener('change',e=>{[...e.target.files].forEach(f=>{const d={n:f.name,m:Math.max(1,Math.round(f.size/1024))+' Ko',on:0,st:0};S.docs.push(d);setTimeout(()=>{d.st=1;d.on=1;render()},1800)});e.target.value='';toast('Document reçu, indexation en cours.');render()});
+setTimeout(()=>{S.docs[2].st=1;S.docs[2].on=1;render()},3000);
+render();
+</script>
+</body>
+</html>
