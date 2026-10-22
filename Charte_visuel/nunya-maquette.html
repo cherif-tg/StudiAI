@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nunya — maquette interactive</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23EFEAE1'/%3E%3Cg transform='translate(8 8) scale(.75)' fill='none' stroke-width='4' stroke-linecap='round'%3E%3Cpath d='M32 54V28' stroke='%235C6B4F'/%3E%3Cpath d='M32 28C12 28 12 6 29 4' stroke='%235C6B4F'/%3E%3Cpath d='M32 32C52 32 52 12 37 8' stroke='%23A6472E'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,500&family=Work+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#EFEAE1;--panel:#FBF9F4;--side:#F6F2E9;--line:#D6CDBB;--ink:#1B2A2E;--muted:#6B6456;
+--green:#5C6B4F;--on:#FBF8F3;--gs:#E6EAE1;
+--ochre:#8A6B2E;--os:#F3ECD9;
+--red:#8C3A3A;--rs:#F3E2DF;--warn:#8A6B2E;
+--accent:#A6472E;--as:#F3E2DB;
+--info:#2B4357;--is:#E3E8EC;
+--b1:rgba(166,71,46,.12);--b2:rgba(43,67,87,.12);
+--sh:0 1px 2px rgba(27,42,46,.05),0 12px 32px rgba(27,42,46,.07);--r:22px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121A19;--panel:#1F2C2A;--side:#1A2523;--line:#35392F;--ink:#EDE7D9;--muted:#A79F8C;
+--green:#8FA37E;--on:#15211F;--gs:#27352A;
+--ochre:#D9B15E;--os:#3A3120;
+--red:#D98A85;--rs:#3B2626;--warn:#D9B15E;
+--accent:#D98562;--as:#3A2820;
+--info:#7C9CB4;--is:#22303A;
+--b1:rgba(217,133,98,.10);--b2:rgba(124,156,180,.10);
+--sh:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.28);}}
+:root[data-theme="dark"]{--bg:#121A19;--panel:#1F2C2A;--side:#1A2523;--line:#35392F;--ink:#EDE7D9;--muted:#A79F8C;
+--green:#8FA37E;--on:#15211F;--gs:#27352A;
+--ochre:#D9B15E;--os:#3A3120;
+--red:#D98A85;--rs:#3B2626;--warn:#D9B15E;
+--accent:#D98562;--as:#3A2820;
+--info:#7C9CB4;--is:#22303A;
+--b1:rgba(217,133,98,.10);--b2:rgba(124,156,180,.10);
+--sh:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.28);}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;color:var(--ink);font:14px/1.5 "Work Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+background:radial-gradient(60rem 40rem at 8% -10%,var(--b1),transparent 60%),radial-gradient(50rem 40rem at 100% 110%,var(--b2),transparent 60%),var(--bg);background-attachment:fixed;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);transition:background-color .4s,color .4s}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.canvas{max-width:1320px;margin:0 auto;padding:clamp(10px,2vw,24px)}
+.frame{display:flex;flex-direction:column;gap:14px}
+.foot{text-align:center;font-size:12px;color:var(--muted);margin:18px 0 0}
+
+/* barre du haut */
+.top{display:flex;align-items:center;gap:14px;padding:4px 6px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:23px}
+.sp{flex:1}
+.tabs,.seg{display:flex;gap:2px;padding:4px;background:var(--panel);border-radius:999px;box-shadow:var(--sh)}
+.tabs button,.seg button{background:none;border:0;border-radius:999px;padding:6px 15px;color:var(--muted);transition:background-color .25s,color .25s}
+.tabs .on,.seg .on{background:var(--as);color:var(--accent);font-weight:600}
+.ico{width:38px;height:38px;border-radius:50%;border:0;background:var(--panel);box-shadow:var(--sh);display:grid;place-items:center;color:var(--ink);transition:transform .25s}
+.ico:hover{transform:rotate(14deg)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--as);color:var(--accent);display:grid;place-items:center;font-weight:600}
+
+/* trois zones fluides */
+.cols{display:grid;grid-template-columns:minmax(210px,.8fr) minmax(0,1.7fr) minmax(290px,1.05fr);gap:14px;height:clamp(540px,calc(100vh - 120px),760px)}
+.cols>section{display:flex;flex-direction:column;min-height:0;border-radius:var(--r)}
+.src,.atl{background:var(--panel);box-shadow:var(--sh)}
+.src{background:var(--side)}
+.mid{background:color-mix(in srgb,var(--panel) 55%,transparent)}
+.hd{padding:16px 18px 8px;display:flex;align-items:center;justify-content:space-between;font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:17px}
+.btn{font-size:13px;padding:7px 14px;border-radius:999px;border:0;background:var(--is);color:var(--info);font-weight:500;transition:transform .2s,background-color .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn.p{background:var(--accent);color:var(--on)}
+.docs{overflow:auto;padding:0 8px}
+.doc{display:flex;gap:10px;padding:10px 12px;width:100%;text-align:left;background:none;border:0;border-radius:14px;transition:background-color .2s}
+.doc:hover{background:var(--panel)}
+.doc i{width:12px;height:12px;margin-top:5px;border-radius:50%;background:var(--green);flex:none}
+.doc i.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--muted)}
+.doc small{display:block;color:var(--muted);font-size:12px}
+.ok{color:var(--green)}.wait{color:var(--warn)}
+.empty{color:var(--muted);font-size:13px;padding:6px 12px;margin:0}
+.note{margin-top:auto;padding:14px 18px;font-size:12px;color:var(--muted)}
+
+/* discussion */
+.msgs{flex:1;overflow:auto;padding:8px 22px;display:flex;flex-direction:column;gap:14px}
+.me{align-self:flex-end;max-width:72%;background:var(--gs);padding:10px 15px;border-radius:18px 18px 4px 18px}
+.ag{max-width:92%;background:var(--panel);box-shadow:var(--sh);padding:12px 16px;border-radius:18px 18px 18px 4px}
+.ag p{margin:0 0 8px}
+.cite{font-size:11px;font-weight:600;color:var(--info);background:var(--is);border-radius:6px;padding:0 6px}
+.refs{font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:12.5px;padding:5px 12px;border:0;border-radius:999px;background:var(--as);color:var(--accent);transition:transform .2s}
+.chip:hover{transform:translateY(-1px)}
+.comp{margin:6px 18px 18px;display:flex;gap:8px;padding:6px;background:var(--panel);border-radius:999px;box-shadow:var(--sh)}
+.comp input{flex:1;font:inherit;padding:8px 14px;border:0;background:none;color:var(--ink)}
+.comp input:focus-visible{outline:none}
+
+/* atelier */
+.tools{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
+.tool{display:flex;align-items:center;gap:6px;font-size:13px;padding:5px 12px 5px 8px;border:0;border-radius:999px;background:var(--side);transition:box-shadow .25s,background-color .25s}
+.tool:hover{background:var(--is)}
+.tool.on{background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--tc);font-weight:600}
+.tool.soon{opacity:.55}
+.shp{flex:none;display:block}
+.body{flex:1;min-height:0;overflow:auto;padding:0 16px}
+.sheet{background:var(--side);border-radius:18px;padding:16px 18px;font-family:"Fraunces",Georgia,serif;margin-top:8px;animation:rise .35s ease both}
+.sh{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.sheet h3{margin:0;font-size:18px;line-height:1.25}
+.sheet .m{font:12px "Work Sans",system-ui,sans-serif;color:var(--muted)}
+.sheet p{margin:0 0 8px;font-size:14px;line-height:1.55}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.two h4{margin:0 0 6px;font:600 12px "Work Sans",system-ui,sans-serif;color:var(--info)}
+.sk{height:8px;border-radius:4px;background:var(--line);margin:0 0 9px}
+.warn{margin-top:8px;font:12px "Work Sans",system-ui,sans-serif;color:var(--warn);background:var(--os);padding:7px 11px;border-radius:10px}
+.act{display:flex;gap:8px;padding:12px 16px 16px;flex-wrap:wrap}
+.sg{font-size:12px;color:var(--muted);margin:2px 0 0}
+.opt{display:block;width:100%;text-align:left;padding:9px 13px;margin:6px 0;border:0;border-radius:12px;background:var(--panel);font-family:"Work Sans",system-ui,sans-serif;transition:transform .2s}
+.opt:hover{transform:translateX(2px)}
+.opt.good{box-shadow:inset 0 0 0 1.5px var(--green);background:var(--gs)}
+.opt.bad{box-shadow:inset 0 0 0 1.5px var(--red);background:var(--rs)}
+
+/* carnet */
+.intro{padding:4px 8px 0}
+.intro h2{font-family:"Fraunces",Georgia,serif;font-size:clamp(24px,4vw,32px);margin:0}
+.intro p{margin:2px 0 0;color:var(--muted)}
+.carnet{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.pane{background:var(--panel);box-shadow:var(--sh);border-radius:var(--r);padding:0 20px 20px;animation:rise .4s ease both}
+.pane .hd{padding:16px 0 8px}
+.pane h3{margin:18px 0 8px;font-family:"Fraunces",Georgia,serif;font-size:15px}
+.n{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 0}
+.bar{grid-column:1/3;height:7px;background:var(--line);border-radius:4px}
+.bar u{display:block;height:100%;border-radius:4px}
+.st{font-size:12px;font-weight:600}.g{color:var(--green)}.o{color:var(--warn)}.r{color:var(--red)}
+.rev{background:var(--rs);border-radius:16px;padding:13px 15px}
+.rev b{display:block}.rev span{font-size:12px;color:var(--muted)}
+.art{display:flex;gap:12px;align-items:center;padding:10px 12px;margin-bottom:8px;border-radius:16px;background:var(--side)}
+.art b{display:block;font-weight:500}
+.art small{color:var(--muted)}
+
+/* accueil */
+.welcome{max-width:680px;margin:clamp(6px,4vh,44px) auto 0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;animation:rise .5s ease both}
+.hero h1{font:600 clamp(42px,8vw,66px)/1 "Fraunces",Georgia,serif;margin:.5rem 0 0}
+.tag{font-family:"Fraunces",Georgia,serif;font-style:italic;color:var(--muted);font-size:18px;margin:4px 0 0}
+.intro-t{color:var(--muted);max-width:52ch;margin:0}
+.ewe{background:var(--panel);border-radius:var(--r);box-shadow:var(--sh);padding:18px 26px;width:100%}
+.glyphs{font-family:"Fraunces",Georgia,serif;font-size:clamp(22px,5vw,34px);letter-spacing:.04em}
+.ewe .cap{font-size:12px;color:var(--muted);margin-top:4px}
+.sess{width:100%;text-align:left}
+.srow{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;background:var(--panel);border:0;border-radius:18px;padding:14px 18px;box-shadow:var(--sh);margin-top:8px;text-align:left;transition:transform .2s}
+.srow:hover{transform:translateY(-2px)}
+.srow small{display:block;color:var(--muted)}
+.srow .go{color:var(--accent);font-weight:600;font-size:13px;white-space:nowrap}
+.srow.busy{opacity:.6;pointer-events:none}
+.newrow{display:flex;justify-content:center;margin-top:12px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:9px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (max-width:980px){.cols{grid-template-columns:1fr;height:auto}.cols>section{max-height:none}.msgs{max-height:420px}.docs{max-height:220px}.two{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="canvas"><div class="frame" id="app"></div><p class="foot">Maquette interactive. Aucun modèle derrière : les réponses sont des exemples.</p></div>
+<input type="file" id="up" multiple hidden accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png">
+<div class="toast" id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DS=[["Photosynthèse selon la lumière",[10,35,60,80,85],["0","25","50","75","100"]],["Activité au cours de la journée",[20,75,90,30,0],["6 h","10 h","14 h","18 h","22 h"]]];
+const TC={fiche:'var(--accent)',resume:'var(--info)',quiz:'var(--green)',graphique:'var(--ochre)',export:'var(--muted)'};
+const TL={fiche:'Fiche',resume:'Résumé',quiz:'Quiz',graphique:'Graphique',export:'Export'};
+const TOOLS=[['resume','Résumé'],['quiz','Quiz'],['graphique','Graphique'],['fiche','Fiche bilingue'],['export','Export']];
+/* SESS, QZ/ANS et les jeux de démonstration ont été retirés : l'interface
+   n'affiche plus que ce que l'API renvoie réellement (cf. PLAN_REALISATION_MVP_v2 §T4.1). */
+const SUN=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>`;
+const MOON=`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></svg>`;
+
+function ensureSid(){let id=localStorage.getItem('nunya_sid');if(!id){id=(crypto.randomUUID?crypto.randomUUID():'s'+Date.now());localStorage.setItem('nunya_sid',id)}return id}
+function artFromApi(a){const t=a.kind==='quiz'?'quiz':a.kind==='summary'?'resume':'fiche';const d=a.created_at?new Date(a.created_at*1000).toLocaleDateString('fr-FR'):'';return{t,n:a.title,d}}
+function apiErr(j){const d=j&&j.detail;if(typeof d==='string')return d;if(Array.isArray(d))return d.map(x=>x.msg||JSON.stringify(x)).join(', ');return 'Erreur du serveur'}
+function liveQZ(){const qs=(S.quiz&&S.quiz.questions)||[];return qs.map(q=>[q.question,q.choices,q.answer_index,q.explanation||''])}
+const S={view:'accueil',loading:0,tool:'fiche',lang:'Français',sum:0,ds:0,qi:0,qa:null,qs:0,done:0,scores:[],docs:[],msgs:[],arts:[],sid:ensureSid(),sumMd:'',quiz:null,eeText:''};
+/* plus de jeux de données fictifs : voir plus bas les états vides */
+
+const effTheme=()=>document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('show'),2200)};
+const chip=(a,v,t)=>`<button class="chip" data-a="${a}" data-v="${E(v)}">${E(t)}</button>`;
+
+function mark(s){return`<svg viewBox="0 0 64 64" width="${s}" height="${s}" fill="none" stroke-width="4" stroke-linecap="round" aria-hidden="true"><path d="M32 54V28" stroke="var(--green)"/><path d="M32 28C12 28 12 6 29 4" stroke="var(--green)"/><path d="M32 32C52 32 52 12 37 8" stroke="var(--accent)"/></svg>`}
+function shape(t,s){s=s||22;const c=TC[t],a=`fill="${c}" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"`,w='stroke="var(--on)" stroke-width="1.8" stroke-linecap="round" fill="none"';let g='';
+if(t=='fiche')g=`<rect x="3.5" y="2.5" width="17" height="19" rx="5" ${a}/><path d="M8 9h8M8 13h8M8 17h4" ${w}/>`;
+else if(t=='resume')g=`<circle cx="12" cy="12" r="10" ${a}/><path d="M7.5 9.5h9M7.5 13h9M7.5 16.5h5" ${w}/>`;
+else if(t=='quiz')g=`<path d="M12 2 22 12 12 22 2 12Z" ${a}/><path d="M9.8 10.2a2.3 2.3 0 1 1 3.3 2c-.7.4-1.1.8-1.1 1.6" ${w}/><circle cx="12" cy="16.3" r=".9" fill="var(--on)"/>`;
+else if(t=='graphique')g=`<path d="M12 2l8.7 5v10L12 22l-8.7-5V7Z" ${a}/><path d="M8.5 16v-3M12 16V9M15.5 16v-5" ${w}/>`;
+else g=`<path d="M5 2.5h9.5L19 7v14.5H5Z" ${a}/><path d="M12 9.5v7M9 14l3 3 3-3" ${w}/>`;
+return`<svg class="shp" viewBox="0 0 24 24" width="${s}" height="${s}" aria-hidden="true">${g}</svg>`}
+const sh=(t,title,meta)=>`<div class="sh">${shape(t,28)}<div><h3>${title}</h3><div class="m">${meta}</div></div></div>`;
+
+function bars(v,l){const w=330/v.length,bw=Math.min(40,w-24);let s='<svg viewBox="0 0 330 200" width="100%" role="img" aria-label="Graphique en barres"><g stroke="var(--line)"><line x1="6" x2="324" y1="20" y2="20"/><line x1="6" x2="324" y1="90" y2="90"/><line x1="6" x2="324" y1="160" y2="160"/></g>';v.forEach((x,i)=>{const h=x*1.4,cx=w*i+w/2;s+=`<rect x="${cx-bw/2}" y="${160-h}" width="${bw}" height="${h}" rx="6" fill="var(--ochre)"/><text x="${cx}" y="${154-h}" font-size="12" font-weight="600" text-anchor="middle" fill="var(--ink)">${x}</text><text x="${cx}" y="178" font-size="11" text-anchor="middle" fill="var(--muted)">${l[i]}</text>`});return s+'</svg>'}
+
+function topbar(){const dark=effTheme()=='dark',ses=S.view!='accueil',lab=dark?'Passer en mode clair':'Passer en mode sombre';
+return`<div class="top"><button class="brand" data-a="home" aria-label="Retour à l'accueil">${mark(30)}<span>Nunya</span></button>${ses?`<div class="tabs">${['atelier','carnet'].map(v=>`<button data-a="view" data-v="${v}" class="${S.view==v?'on':''}">${v=='atelier'?'Atelier':'Carnet'}</button>`).join('')}</div>`:''}<div class="sp"></div>${ses?`<div class="seg">${['Français','Éwé','Kabiyè'].map(l=>`<button data-a="lang" data-v="${l}" class="${S.lang==l?'on':''}">${l}</button>`).join('')}</div>`:''}<button class="ico" data-a="theme" aria-label="${lab}" title="${lab}">${dark?SUN:MOON}</button>${ses?'<div class="av">K</div>':''}</div>`}
+
+function accueil(){return`<div class="welcome"><div class="hero">${mark(76)}<h1>Nunya</h1><p class="tag">Apprendre commence par comprendre.</p></div><p class="intro-t">Dépose tes documents et pose tes questions : Nunya les transforme en résumés et en quiz, en français — les langues locales arrivent juste après cette première version.</p><div class="ewe"><div class="glyphs" lang="ee">Ɖɖ Ƒƒ Ɣɣ Ŋŋ Ɔɔ Ʋʋ Ɛɛ</div><div class="cap">Alphabet éwé : tous les caractères s'affichent correctement.</div></div><div class="sess"><div class="sg">Session</div><button class="srow ${S.loading?'busy':''}" data-a="load" data-v="current"><span>Reprendre la session<small>Tes sources et ton carnet</small></span><span class="go">${S.loading=='current'?'Chargement…':'Ouvrir'}</span></button><div class="newrow"><button class="btn p" data-a="load" data-v="new">${S.loading=='new'?'Création…':'Nouvelle session'}</button></div></div></div>`}
+
+function sources(){return`<section class="src"><div class="hd">Sources <button class="btn" data-a="add">Ajouter</button></div><div class="docs">${S.docs.length?S.docs.map((d,i)=>`<button class="doc" data-a="doc" data-v="${i}"><i class="${d.on?'':'off'}"></i><div>${E(d.n)}<small>${d.st?`<span class=ok>Indexé</span>${d.m?', '+d.m:''}`:'<span class=wait>Lecture du texte en cours</span>'}</small></div></button>`).join(''):`<p class="empty">Aucun document pour l'instant. Ajoute un PDF, un Word ou une photo de cours.</p>`}</div><div class="note">Vos documents restent privés et ne sont visibles que dans votre session.</div></section>`}
+
+function chat(){return`<section class="mid"><div class="hd">Discussion</div><div class="msgs" id="msgs">${S.msgs.length?S.msgs.map(m=>m.r=='me'?`<div class="me">${E(m.t)}</div>`:`<div class="ag"><p>${m.t}</p>${m.refs?`<div class="refs">${m.refs.map((r,i)=>`${i+1}. ${r}<br>`).join('')}</div>`:''}${m.chips?`<div class="chips">${m.chips.map(c=>chip('ask',c,c)).join('')}</div>`:''}</div>`).join(''):`<div class="ag"><p>Bonjour, je suis Nunya. Ajoute un document puis pose-moi une question.</p></div>`}</div><div class="comp"><input id="q" placeholder="Posez une question sur vos sources" aria-label="Votre question"><button class="btn p" data-a="send">Envoyer</button></div></section>`}
+
+function panel(){const t=S.tool;
+if(t=='resume'){if(!S.sumMd)return`<p class="sg">Résumé</p><div class="sheet"><p class="empty">Aucun résumé pour l'instant. Demande « fais un résumé » dans la discussion : le résultat s'affichera ici et ne sera enregistré que si tu cliques sur « Ajouter au Carnet ».</p></div>`;const title=S.sumMd.split('\n')[0].replace(/^#+\s*/,'').slice(0,80)||'Résumé';const body=S.sumMd.split('\n').filter(Boolean).map(p=>`<p>${E(p)}</p>`).join('');return`<p class="sg">Suggestions</p><div class="chips">${chip('ask','Fais un résumé court','Résumé court')}${chip('ask','Fais un résumé détaillé','Résumé détaillé')}</div><div class="sheet">${sh('resume',title,'Issu de tes sources')}${body}</div><div class="chips" style="margin-top:10px">${chip('art','resume','Ajouter au Carnet')}</div>`}
+if(t=='quiz'){const Q=liveQZ();if(!Q.length)return`<p class="sg">Quiz</p><div class="sheet"><p class="empty">Aucun quiz pour l'instant. Demande « fais-moi un quiz » dans la discussion : il s'affichera ici, sans être enregistré.</p></div>`;if(S.done)return`<div class="sheet">${sh('quiz','Quiz terminé','Score : '+S.qs+' sur '+Q.length)}<p>Ajoute ce quiz au Carnet si tu veux le garder.</p></div><div class="chips" style="margin-top:10px">${chip('quizgo',0,'Rejouer')}${chip('view','carnet','Voir le Carnet')}</div>`;const q=Q[S.qi];return`<div class="sheet">${sh('quiz',q[0],'Question '+(S.qi+1)+' sur '+Q.length)}${q[1].map((o,i)=>`<button class="opt ${S.qa==null?'':i==q[2]?'good':i==S.qa?'bad':''}" data-a="opt" data-v="${i}">${E(o)}</button>`).join('')}${S.qa!=null?`<div class="warn">${S.qa==q[2]?'Bonne réponse.':'Réponse incorrecte.'} ${E(q[3]||'')}</div>`:''}</div>${S.qa!=null?`<div class="chips" style="margin-top:10px">${chip('next',0,S.qi<Q.length-1?'Question suivante':'Voir le résultat')}</div>`:''}`}
+if(t=='graphique')return`<p class="sg">Suggestions</p><div class="chips">${chip('ds',0,'Effet de la lumière')}${chip('ds',1,'Activité sur 24 h')}</div><div class="sheet">${sh('graphique',DS[S.ds][0],'Bientôt disponible')}${bars(DS[S.ds][1],DS[S.ds][2])}<div class="warn">Graphique : bientôt disponible (non branché au MVP).</div></div>`;
+if(t=='export')return`<p class="sg">Suggestions</p><div class="chips">${chip('exp','PDF','Fiche en PDF')}${chip('exp','Word','Fiche en Word')}${chip('exp','Bilingue','Version bilingue')}</div><div class="sheet">${sh('export','Exporter','Bientôt disponible')}<p>Le fichier reprend le contenu de la fiche et renvoie aux passages sources.</p><div class="warn">Export PDF/Word : bientôt disponible.</div></div>`;
+return`<p class="sg">Suggestions</p><div class="chips">${chip('ask','Ajoute un schéma','Ajouter un schéma')}${chip('ask','Simplifie la fiche','Simplifier')}</div><div class="sheet">${sh('fiche','Aperçu de fiche','Mise en page de démonstration — non générée depuis tes sources')}<div class="two"><div><h4>Français</h4><p>La photosynthèse transforme l'énergie lumineuse en énergie chimique, en deux phases : la phase claire et le cycle de Calvin.</p></div><div><h4>${S.lang=='Français'?'Éwé':S.lang}</h4>${S.eeText?`<p>${E(S.eeText)}</p>`:`<div class="sk" style="width:96%"></div><div class="sk" style="width:88%"></div><div class="sk" style="width:92%"></div><div class="sk" style="width:60%"></div>`}</div></div><div class="warn">Aperçu statique : ni la fiche bilingue ni la traduction ne sont générées dans cette version.</div></div>`}
+
+function atelier(){return`<section class="atl"><div class="hd">Atelier</div><div class="tools">${TOOLS.map(x=>`<button class="tool ${S.tool==x[0]?'on':''} ${x[0]=='graphique'||x[0]=='export'?'soon':''}" style="--tc:${TC[x[0]]}" data-a="tool" data-v="${x[0]}">${shape(x[0],18)}<span>${x[1]}</span></button>`).join('')}</div><div class="body">${panel()}</div><div class="act"><button class="btn p" data-a="exp" data-v="PDF">Télécharger en PDF</button><button class="btn" data-a="art">Ajouter au Carnet</button></div></section>`}
+
+function carnet(){return`<div class="intro"><h2>Mon Nunyati</h2><p>Ce que j'ai fait grandir.</p></div><div class="carnet"><section class="pane"><div class="hd">Artefacts enregistrés</div>${S.arts.length?S.arts.map(a=>`<div class="art">${shape(a.t,34)}<div><b>${E(a.n)}</b><small>${TL[a.t]} · ${E(a.d)}</small></div></div>`).join(''):`<p class="empty" style="padding:0">Aucun artefact pour l'instant. Génère un résumé ou un quiz, puis clique sur « Ajouter au Carnet ».</p>`}</section><section class="pane"><div class="hd">Notions</div><p class="empty" style="padding:0">Le suivi par notion arrive après le MVP.</p></section><section class="pane"><div class="hd">Résultats des quiz</div><p class="empty" style="padding:0">L'historique des scores arrive après le MVP.</p></section></div>`}
+
+function render(){const v=S.view;$("#app").innerHTML=topbar()+(v=='accueil'?accueil():v=='atelier'?`<div class="cols">${sources()}${chat()}${atelier()}</div>`:carnet());const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight}
+
+async function send(t){t=(t||'').trim();if(!t)return;S.msgs.push({r:'me',t});render();const source_ids=S.docs.filter(d=>d.on&&d.st&&d.id).map(d=>d.id);try{const res=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:S.sid,message:t,source_ids:source_ids.length?source_ids:null})});const j=await res.json();if(!res.ok){S.msgs.push({r:'ag',t:apiErr(j)});render();return}S.msgs.push({r:'ag',t:j.answer||''});const steps=j.steps||[];const sum=[...steps].filter(s=>s.tool==='summarize').pop();const qz=[...steps].filter(s=>s.tool==='generate_quiz').pop();if(sum&&sum.data){S.tool='resume';S.sumMd=sum.data.markdown||sum.result_preview||'';S.eeText=''}if(qz&&qz.data&&qz.data.questions){S.tool='quiz';S.quiz=qz.data;S.qi=0;S.qa=null;S.qs=0;S.done=0}}catch(e){S.msgs.push({r:'ag',t:'Impossible de joindre le serveur.'})}render();const q=$('#q');q&&q.focus()}
+const artName=()=>({fiche:'Fiche de révision, '+S.lang,resume:'Résumé du chapitre 3',quiz:'Quiz sur la photosynthèse',graphique:DS[S.ds][0],export:'Export PDF de la fiche'})[S.tool];
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,v=b.dataset.v;
+if(a=='home'){S.view='accueil';S.loading=0}
+else if(a=='theme'){document.documentElement.dataset.theme=effTheme()=='dark'?'light':'dark'}
+else if(a=='load'){if(S.loading)return;S.loading=v;render();(async()=>{if(v=='new'){S.sid=(crypto.randomUUID?crypto.randomUUID():'s'+Date.now());localStorage.setItem('nunya_sid',S.sid);S.msgs=[];S.arts=[];S.sumMd='';S.quiz=null;S.eeText='';S.qs=0;S.qi=0;S.qa=null;S.done=0}S.tool='resume';try{const rs=await fetch('/sources');if(!rs.ok)throw new Error(apiErr(await rs.json().catch(()=>({}))));const ra=await fetch('/artifacts?session_id='+encodeURIComponent(S.sid));if(!ra.ok)throw new Error(apiErr(await ra.json().catch(()=>({}))));const src=await rs.json();const arts=await ra.json();S.docs=(Array.isArray(src)?src:[]).map(s=>({id:s.id,n:s.filename,m:s.chunks+' extraits',on:1,st:1}));S.arts=(Array.isArray(arts)?arts:[]).map(artFromApi)}catch(e){S.docs=[];S.arts=[];toast('Serveur injoignable : '+(e.message||'réessaie dans un instant.'))}S.loading=0;S.view='atelier';render()})();return}
+else if(a=='view'){S.view=v}else if(a=='tool'){S.tool=v;if(v=='graphique'||v=='export')toast('Bientôt disponible.')}else if(a=='lang'){S.lang=v;if(v!=='Français')toast('Langues locales : après le MVP.')}
+else if(a=='add'){$('#up').click();return}
+else if(a=='doc'){const d=S.docs[v];if(d)d.on=d.st?!d.on:0}
+else if(a=='ask'){send(v);return}
+else if(a=='send'){const q=$('#q');send(q.value);return}
+else if(a=='sum'){S.sum=+v}else if(a=='ds'){S.ds=+v}
+else if(a=='opt'){if(S.qa!=null)return;S.qa=+v;if(+v==liveQZ()[S.qi][2])S.qs++}
+else if(a=='next'){const Q=liveQZ();if(S.qi<Q.length-1){S.qi++;S.qa=null}else{S.done=1;S.scores.push(Math.round(S.qs/Q.length*100))}}
+else if(a=='quizgo'){S.view='atelier';S.tool='quiz';S.qi=0;S.qa=null;S.qs=0;S.done=0}
+else if(a=='exp'){toast('Export bientôt disponible.');return}
+else if(a=='tr'){const text=S.tool==='resume'?(S.sumMd||''):'La photosynthèse transforme l\'énergie lumineuse en énergie chimique, en deux phases : la phase claire et le cycle de Calvin.';if(!text){toast('Rien à traduire pour l\'instant.');return}fetch('/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,target:'ee'})}).then(async r=>{const j=await r.json();if(!r.ok)throw new Error(apiErr(j));return j}).then(j=>{S.eeText=j.translation;render()}).catch(err=>toast(err.message||'Traduction indisponible'));return}
+else if(a=='art'){const kind=S.tool==='quiz'?'quiz':S.tool==='resume'?'summary':null;if(!kind){toast('Ajoute un résumé ou un quiz au Carnet. Les autres outils arrivent bientôt.');return}const title=kind==='quiz'?((S.quiz&&S.quiz.title)||artName()):(S.sumMd?(S.sumMd.split('\n')[0].replace(/^#+\s*/,'').slice(0,80)||artName()):artName());const content=kind==='quiz'?JSON.stringify(S.quiz||{}):(S.sumMd||'');if(!content||content==='{}'){toast('Génère d\'abord le contenu dans l\'Atelier.');return}fetch('/artifacts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:S.sid,kind,title,content})}).then(async r=>{const j=await r.json();if(!r.ok)throw new Error(apiErr(j));return fetch('/artifacts?session_id='+encodeURIComponent(S.sid))}).then(r=>r.json()).then(list=>{S.arts=list.map(artFromApi);toast('Ajouté au Carnet : '+title);render()}).catch(()=>toast('Impossible d\'ajouter au Carnet.'));return}
+render()});
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&e.target.id=='q'){send(e.target.value)}});
+$('#up').addEventListener('change',async e=>{for(const f of [...e.target.files]){const d={n:f.name,m:Math.max(1,Math.round(f.size/1024))+' Ko',on:0,st:0,id:null};S.docs.push(d);render();const fd=new FormData();fd.append('file',f);try{const res=await fetch('/sources',{method:'POST',body:fd});const j=await res.json();if(!res.ok){S.docs=S.docs.filter(x=>x!==d);toast(apiErr(j));render();continue}d.id=j.id;d.st=1;d.on=1;d.m=(j.chunks||0)+' extraits';toast('Document indexé : '+f.name)}catch(err){S.docs=S.docs.filter(x=>x!==d);toast('Échec d\'envoi : document non indexé.')}render()}e.target.value='';});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!document.documentElement.dataset.theme)render()});
+render();
+</script>
+</body>
+</html>

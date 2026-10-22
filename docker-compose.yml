@@ -1,0 +1,23 @@
+# Stack locale : API + interface dans un seul conteneur.
+#
+#   docker compose up --build     -> http://localhost:8000/
+#
+# Le modèle d'embedding est téléchargé pendant la construction de l'image :
+# le premier démarrage ne dépend pas du réseau. Compte 1,5 Go d'image et
+# environ 1 Go de RAM une fois le moteur chargé.
+#
+# Ce fichier ne sert qu'au développement et aux démonstrations locales. Pour un
+# déploiement public, voir docs/DEPLOIEMENT.md (interface sur Vercel, API à part).
+
+services:
+  nunya:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Tout l'état vit ici : base vectorielle, journal SQLite, artefacts, uploads.
+      - ./data:/srv/data
+    restart: unless-stopped
