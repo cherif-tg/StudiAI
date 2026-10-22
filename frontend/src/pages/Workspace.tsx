@@ -18,11 +18,8 @@ import {
 } from "../lib/conversations";
 import type { ResumeConversation } from "../lib/conversations";
 import { identifiant, titreDepuisMarkdown } from "../lib/format";
-import type { AgentMode, ChatMessage, Quiz, ToolStep } from "../lib/types";
-
-function extraireEtape(etapes: ToolStep[], outil: string): ToolStep | undefined {
-  return [...etapes].reverse().find((etape) => etape.tool === outil);
-}
+import type { ArtefactChat } from "../lib/artefacts";
+import type { AgentMode, ChatMessage, Quiz } from "../lib/types";
 
 export function Workspace() {
   const { sessionId, nouvelleSession, reprendreSession, sources, selection, enregistrerArtefact } =
@@ -37,21 +34,23 @@ export function Workspace() {
   const [outil, setOutil] = useState<CleOutil>("resume");
   const [enregistrement, setEnregistrement] = useState(false);
 
-  /** Résumé et quiz renvoyés par l'agent : affichés dans l'atelier (inchangé). */
-  const appliquerEtapes = useCallback((etapes: ToolStep[]) => {
-    const etapeResume = extraireEtape(etapes, "summarize");
-    const markdown = etapeResume?.data?.markdown;
-    if (typeof markdown === "string" && markdown.trim()) {
-      setResume(markdown);
-      setOutil("resume");
-    }
+  // Affichage mobile uniquement : quel volet est visible (aucun effet sur la logique).
+  const [volet, setVolet] = useState<"sources" | "chat" | "atelier">("chat");
 
-    const etapeQuiz = extraireEtape(etapes, "generate_quiz");
-    const donneesQuiz = etapeQuiz?.data as Quiz | undefined;
-    if (donneesQuiz?.questions?.length) {
-      setQuiz(donneesQuiz);
+  /**
+   * Ouvre un artefact dans l'Atelier — uniquement au clic d'une carte de la
+   * discussion. Rien ne s'affiche tout seul : l'Atelier reste vide tant que
+   * l'apprenant n'a rien ouvert.
+   */
+  const ouvrirArtefact = useCallback((artefact: ArtefactChat) => {
+    if (artefact.kind === "summary") {
+      setResume(artefact.markdown);
+      setOutil("resume");
+    } else {
+      setQuiz(artefact.quiz);
       setOutil("quiz");
     }
+    setVolet("atelier");
   }, []);
 
   const envoyer = useCallback(
@@ -98,8 +97,6 @@ export function Workspace() {
               : message,
           ),
         );
-
-        appliquerEtapes(reponse.steps);
       } catch (erreur) {
         const message =
           erreur instanceof ApiError ? erreur.message : "Une erreur inattendue est survenue.";
@@ -120,7 +117,7 @@ export function Workspace() {
         setEnvoi(false);
       }
     },
-    [appliquerEtapes, envoi, push, selection, sessionId, sources.length],
+    [envoi, push, selection, sessionId, sources.length],
   );
 
   // --- Régénérer une réponse ----------------------------------------------
@@ -180,7 +177,6 @@ export function Workspace() {
               : message,
           ),
         );
-        appliquerEtapes(reponse.steps);
       } catch (erreur) {
         const message = erreur instanceof ApiError ? erreur.message : "Une erreur inattendue est survenue.";
         // On revient à la dernière réponse valable, s'il y en a une.
@@ -198,7 +194,7 @@ export function Workspace() {
         setEnvoi(false);
       }
     },
-    [appliquerEtapes, envoi, push, selection, sessionId, sources.length],
+    [envoi, push, selection, sessionId, sources.length],
   );
 
   // --- Modifier une question déjà envoyée ---------------------------------
@@ -255,19 +251,14 @@ export function Workspace() {
   const sessionChargee = useRef<string | null>(null);
   const [historique, setHistorique] = useState<ResumeConversation[]>([]);
 
-  // À l'ouverture (ou à la reprise d'une conversation), on recharge ses messages
-  // et on retrouve le dernier résumé et le dernier quiz pour l'atelier.
+  // À l'ouverture (ou à la reprise d'une conversation), on recharge ses messages.
+  // L'Atelier reste volontairement vide : c'est le clic sur la carte d'un artefact
+  // qui l'ouvre, pas le simple fait de rouvrir la conversation.
   useEffect(() => {
     if (!compte) return;
     const charges = chargerConversation(compte, sessionId);
     sessionChargee.current = sessionId;
     setMessages(charges);
-    if (!charges.length) return;
-    const etapes = charges.flatMap((message) => message.steps ?? []);
-    const markdown = extraireEtape(etapes, "summarize")?.data?.markdown;
-    const donneesQuiz = extraireEtape(etapes, "generate_quiz")?.data as Quiz | undefined;
-    setResume(typeof markdown === "string" ? markdown : "");
-    setQuiz(donneesQuiz?.questions?.length ? donneesQuiz : null);
   }, [compte, sessionId]);
 
   // Chaque changement de la discussion est enregistré (hors message en attente).
@@ -295,7 +286,6 @@ export function Workspace() {
   };
 
   // Affichage mobile uniquement : quel volet est visible (aucun effet sur la logique).
-  const [volet, setVolet] = useState<"sources" | "chat" | "atelier">("chat");
   const VOLETS = [
     { cle: "sources", label: "Sources", compte: sources.length || null, nouveau: false },
     { cle: "chat", label: "Discussion", compte: null, nouveau: false },
@@ -346,6 +336,7 @@ export function Workspace() {
           sourcesActives={sourcesActives}
           nombreSources={sources.length}
           onOuvrirAtelier={() => setOutil("resume")}
+          onOuvrirArtefact={ouvrirArtefact}
         />
         <AtelierPane
           outil={outil}

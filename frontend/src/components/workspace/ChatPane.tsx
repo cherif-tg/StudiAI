@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { Icon } from "../Icon";
 import { Markdown } from "../Markdown";
 import { ActionsMessage } from "./ActionsMessage";
+import { CarteArtefact } from "./CarteArtefact";
 import { IndicateurReflexion } from "./IndicateurReflexion";
 import { MessageUtilisateur } from "./MessageUtilisateur";
 import { Modal } from "../Modal";
@@ -12,6 +13,8 @@ import type { Passage } from "../../lib/passages";
 import { api } from "../../lib/api";
 import { formatDateHeure } from "../../lib/format";
 import type { ResumeConversation } from "../../lib/conversations";
+import { artefactsDepuisEtapes } from "../../lib/artefacts";
+import type { ArtefactChat } from "../../lib/artefacts";
 import type { AgentMode, AgentModeInfo, ChatMessage } from "../../lib/types";
 
 const SUGGESTIONS = [
@@ -62,6 +65,7 @@ export function ChatPane({
   sourcesActives,
   nombreSources,
   onOuvrirAtelier,
+  onOuvrirArtefact,
   historique = [],
   sessionActive,
   onReprendre,
@@ -77,6 +81,7 @@ export function ChatPane({
   sourcesActives: number;
   nombreSources: number;
   onOuvrirAtelier: () => void;
+  onOuvrirArtefact: (artefact: ArtefactChat) => void;
   historique?: ResumeConversation[];
   sessionActive?: string;
   onReprendre?: (id: string) => void;
@@ -364,6 +369,13 @@ export function ChatPane({
                       ))}
                     </div>
                   ) : null}
+                  {artefactsDepuisEtapes(message.steps).map((artefact, index) => (
+                    <CarteArtefact
+                      key={`${message.id}-artefact-${index}`}
+                      artefact={artefact}
+                      onOuvrir={() => onOuvrirArtefact(artefact)}
+                    />
+                  ))}
                   <ActionsMessage
                     message={message}
                     question={question}
