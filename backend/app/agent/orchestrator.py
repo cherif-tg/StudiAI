@@ -16,18 +16,33 @@ SYSTEM = (
     "Tu es Nunya, tuteur. Tu t'appuies uniquement sur les documents de l'apprenant "
     "via l'outil rag_search. Tu peux produire un résumé (summarize) ou un quiz "
     "(generate_quiz) quand on te le demande. "
-    "Règle stricte : si l'apprenant demande un résumé, une synthèse ou une fiche, tu DOIS "
-    "appeler l'outil summarize et ne jamais rédiger le résumé toi-même. S'il demande un "
-    "quiz ou un QCM, tu DOIS appeler generate_quiz. Ces outils produisent une carte que "
-    "l'apprenant ouvrira dans son Atelier ; une réponse rédigée à la main n'aurait pas de carte. "
+    "Règle 1 — Questions : pour toute question (qu'est-ce que, comment, pourquoi, quelle "
+    "différence, explique…), appelle rag_search puis réponds directement dans le chat à "
+    "partir des passages trouvés. N'appelle jamais summarize ni generate_quiz pour répondre "
+    "à une question. "
+    "Règle 2 — Hors des documents : si les passages contiennent des éléments de réponse, "
+    "même partiels ou dispersés entre plusieurs passages, réponds avec ces éléments et "
+    "cite-les. Seulement si aucun passage ne traite le sujet précis de la question, dis "
+    "clairement que les documents de l'apprenant n'en parlent pas, sans répondre avec tes "
+    "propres connaissances. Ne relance pas rag_search plus de deux fois pour une même question. "
+    "Règle 3 — Résumé et quiz : seulement si l'apprenant demande explicitement un résumé, "
+    "une synthèse ou une fiche, tu DOIS appeler l'outil summarize et ne jamais rédiger le "
+    "résumé toi-même. S'il demande un quiz ou un QCM, tu DOIS appeler generate_quiz. Ces "
+    "outils produisent une carte que l'apprenant ouvrira dans son Atelier ; une réponse "
+    "rédigée à la main n'aurait pas de carte. "
     "Après l'appel à summarize ou generate_quiz, ta réponse finale tient en une ou deux "
-    "phrases : dis ce qui a été produit et invite à ouvrir la carte. Ne recopie jamais le "
-    "contenu de l'artefact dans le chat."
+    "phrases : dis ce qui a été produit et invite à ouvrir la carte. Si l'outil indique que "
+    "les documents ne traitent pas le sujet, dis-le simplement, sans parler de carte. Ne "
+    "recopie jamais le contenu de l'artefact dans le chat. "
     "N'invente rien qui n'est pas dans les sources. Réponds en français, de façon claire "
     "et concise. Ne sauvegarde rien : l'apprenant ajoutera lui-même au Carnet."
 )
 
+# Mémoire de conversation : seulement les questions et les réponses finales,
+# jamais les résultats d'outils (passages, résumés, quiz), qui alourdissaient
+# chaque requête au point de dépasser la limite de tokens par minute de Groq.
 _history: dict[str, list[dict]] = {}
+MAX_HISTORIQUE = 8  # messages conservés (4 échanges question/réponse)
 
 
 async def run_agent(services: Services, req: ChatRequest) -> ChatResponse:
@@ -36,9 +51,10 @@ async def run_agent(services: Services, req: ChatRequest) -> ChatResponse:
     # Le mode choisi change la consigne système ; le socle (sources, outils,
     # absence d'enregistrement automatique) reste identique.
     systeme = SYSTEM + consigne(req.mode)
-    messages = _history.setdefault(req.session_id, [{"role": "system", "content": systeme}])
-    messages[0] = {"role": "system", "content": systeme}
-    messages.append({"role": "user", "content": req.message})
+    passe = _history.get(req.session_id, [])
+    question = {"role": "user", "content": req.message}
+    # Copie locale : un échange qui échoue ne pollue pas l'historique.
+    messages = [{"role": "system", "content": systeme}, *passe, question]
 
     steps: list[ToolStep] = []
     tools = registry.schemas(services)
@@ -71,6 +87,5 @@ async def run_agent(services: Services, req: ChatRequest) -> ChatResponse:
         reply = await services.llm.achat(messages, tools=tools)
 
     answer = (reply.content or "").strip() or "Je n'ai pas pu formuler de réponse."
-    messages.append({"role": "assistant", "content": answer})
-    _history[req.session_id] = [messages[0]] + messages[1:][-39:]
+    _history[req.session_id] = [*passe, question, {"role": "assistant", "content": answer}][-MAX_HISTORIQUE:]
     return ChatResponse(answer=answer, translation=None, steps=steps, artifacts=[])

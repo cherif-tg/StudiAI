@@ -158,6 +158,9 @@ export const api = {
   createArtifact: (corps: { kind: ArtifactKind; title: string; content: string }) =>
     requete<Artifact>("/artifacts", json(corps)),
 
+  deleteArtifact: (id: string) =>
+    requete<{ ok: boolean }>(`/artifacts/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
   // --- Droits sur les données et mot de passe --------------------------
   // Ces routes sont à ajouter au backend (voir README, « Intégration backend »).
   // Tant qu'elles n'existent pas, l'interface le détecte (routeAbsente) et l'indique.

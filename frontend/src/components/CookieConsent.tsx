@@ -47,6 +47,16 @@ export function CookieConsent() {
     window.dispatchEvent(new Event(EVENEMENT_COOKIES_CHOISI));
   };
 
+  const refuser = () => {
+    try {
+      localStorage.setItem(CLE, JSON.stringify({ choix: "refuse", date: Date.now() }));
+    } catch {
+      /* sans stockage, le bandeau reviendra à la prochaine visite */
+    }
+    setVisible(false);
+    window.dispatchEvent(new Event(EVENEMENT_COOKIES_CHOISI));
+  };
+
   return (
     <section className="cookie-banner" role="region" aria-label="Consentement aux cookies">
       <span className="cookie-banner__icon" aria-hidden="true">
@@ -63,6 +73,9 @@ export function CookieConsent() {
         <Link to="/confidentialite#cookies" className="btn btn--sm">
           En savoir plus
         </Link>
+        <button type="button" className="btn btn--sm" onClick={refuser}>
+          Refuser
+        </button>
         <button type="button" className="btn btn--primary btn--sm" onClick={accepter}>
           Accepter
         </button>

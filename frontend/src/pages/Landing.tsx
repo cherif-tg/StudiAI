@@ -94,6 +94,37 @@ const PUBLICS = [
   },
 ];
 
+const EVOLUTIONS = [
+  {
+    groupe: "Langue et contenus",
+    items: [
+      { titre: "Traduction éwé", texte: "Relue par un locuteur natif avant d'être proposée." },
+      { titre: "OCR des scans", texte: "Lire aussi les PDF scannés, sans couche texte." },
+      { titre: "Exports", texte: "Récupérer ses résumés et ses quiz dans un fichier." },
+    ],
+  },
+  {
+    groupe: "Apprentissage",
+    items: [
+      {
+        titre: "Quiz proposé",
+        texte: "Après quelques minutes d'échange, un quiz sur les points abordés : tout de suite ou à la fin.",
+      },
+      {
+        titre: "Suivi enseignant",
+        texte: "Une vue privée pour suivre sa classe, jamais un classement visible par les élèves.",
+      },
+    ],
+  },
+  {
+    groupe: "Plateforme",
+    items: [
+      { titre: "Observabilité", texte: "Suivre le fonctionnement et le coût de chaque question." },
+      { titre: "WhatsApp", texte: "Un second canal, branché sur la même API." },
+    ],
+  },
+];
+
 const SYMBOLES = [
   {
     cle: "livre",
@@ -118,11 +149,11 @@ const SYMBOLES = [
 const FRONTIERES = [
   {
     titre: "Aucune réponse inventée",
-    texte: "Si le document ne contient pas l'information, l'agent refuse de répondre.",
+    texte: "Si tes documents ne contiennent pas l'information, l'agent te le dit au lieu d'inventer.",
   },
   {
-    titre: "Aucun artefact automatique",
-    texte: "Résumés et quiz ne rejoignent le carnet que sur un clic explicite.",
+    titre: "Aucun quiz imposé",
+    texte: "Tu choisis quand t'évaluer, et rien ne rejoint ton carnet sans ton accord.",
   },
   {
     titre: "Aucun classement public",
@@ -490,6 +521,30 @@ export function Landing() {
           </div>
           <div className="lp-alphabet__glyphs" lang="ee">
             Ɖɖ Ƒƒ Ɣɣ Ŋŋ Ɔɔ Ʋʋ Ɛɛ
+          </div>
+        </section>
+
+        {/* --- Évolutions après le MVP --------------------------------------- */}
+        <section className="section">
+          <header className="lp-head" data-reveal>
+            <p className="eyebrow">Après le MVP</p>
+            <h2>Les prochaines évolutions</h2>
+          </header>
+
+          <div className="lp-evol">
+            {EVOLUTIONS.map((bloc, index) => (
+              <div key={bloc.groupe} className="lp-evol__groupe" data-reveal style={{ transitionDelay: `${index * 80}ms` }}>
+                <h3>{bloc.groupe}</h3>
+                <ul className="lp-evol__liste">
+                  {bloc.items.map((item) => (
+                    <li key={item.titre}>
+                      <strong>{item.titre}</strong>
+                      <span>{item.texte}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </section>
 

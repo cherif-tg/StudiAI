@@ -6,6 +6,7 @@ Interface stable : ingest / search / context_for / delete.
 d'embedding) coûte de 50 s à plusieurs minutes selon la machine : on le fait au
 démarrage du serveur, en tâche de fond, plutôt qu'au premier document déposé.
 """
+import re
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,30 @@ from app.services.documents import chunk_text, extract_text
 
 class RagUnavailable(RuntimeError):
     pass
+
+
+# Mots trop courants pour servir de mot-clé dans la recherche exacte.
+_MOTS_VIDES = {
+    "quelle", "quelles", "quel", "quels", "entre", "comment", "pourquoi", "est-ce", "dans",
+    "pour", "avec", "sans", "sont", "cette", "votre", "notre", "leur", "leurs", "faire",
+    "explique", "expliquer", "moi", "différence", "difference", "définition", "cours",
+    "document", "documents", "selon", "d'après", "après", "avant", "quoi", "plus", "moins",
+    "comprends", "comprendre", "compris", "donne", "donner", "aide", "aider", "veux", "peux",
+    "savoir", "montre", "montrer", "parle", "parler", "c'est", "qu'est-ce", "elle", "elles",
+}
+
+
+def _mots_cles(question: str) -> list[str]:
+    """Mots distinctifs de la question (termes techniques, sigles, noms propres)."""
+    mots = re.findall(r"[\w’'\-]{4,}", question)
+    vus, garde = set(), []
+    for mot in mots:
+        cle = mot.lower()
+        if cle in _MOTS_VIDES or cle in vus:
+            continue
+        vus.add(cle)
+        garde.append(mot)
+    return garde[:6]
 
 
 @dataclass
@@ -92,7 +117,60 @@ class RagService:
         hits = []
         for doc, meta, dist in zip(res["documents"][0], res["metadatas"][0], res["distances"][0]):
             hits.append(Hit(meta["source_id"], meta["filename"], doc, round(1 - dist, 4)))
-        return hits
+        try:
+            exacts = self._recherche_exacte(query, source_ids, limite=max(1, k // 2))
+        except Exception:  # noqa: BLE001 - la recherche exacte n'est qu'un complément
+            exacts = []
+        if not exacts:
+            return hits
+        # Les passages qui contiennent les mots exacts de la question passent en tête,
+        # puis la recherche par le sens complète jusqu'à k passages.
+        textes = {h.text for h in exacts}
+        return (exacts + [h for h in hits if h.text not in textes])[:k]
+
+    def _recherche_exacte(self, query: str, source_ids: list[str] | None, limite: int) -> list[Hit]:
+        """Passages contenant le plus de mots-clés de la question (recherche lexicale).
+
+        Complète la recherche vectorielle : un modèle d'embedding léger rate souvent
+        un passage technique (WHERE, HAVING, PK…) qu'une simple recherche de mots trouve.
+        """
+        mots = _mots_cles(query)
+        if not mots:
+            return []
+        compte: dict[str, int] = {}
+        documents: dict[str, tuple[str, dict]] = {}
+        for mot in mots:
+            ids_mot: set[str] = set()
+            for variante in {mot, mot.lower(), mot.upper(), mot.capitalize()}:
+                got = self._collection.get(
+                    where=self._where(source_ids),
+                    where_document={"$contains": variante},
+                    include=["documents", "metadatas"],
+                )
+                for ident, doc, meta in zip(got["ids"], got["documents"], got["metadatas"]):
+                    ids_mot.add(ident)
+                    documents[ident] = (doc, meta)
+            for ident in ids_mot:
+                compte[ident] = compte.get(ident, 0) + 1
+        if not compte:
+            return []
+        # Il faut au moins deux mots-clés en commun (ou le seul mot-clé s'il n'y en a qu'un).
+        seuil = min(2, len(mots))
+
+        def occurrences(ident: str) -> int:
+            texte = documents[ident][0].lower()
+            return sum(texte.count(m.lower()) for m in mots)
+
+        # D'abord le nombre de mots-clés différents, puis leur nombre d'apparitions.
+        retenus = sorted(
+            (i for i, n in compte.items() if n >= seuil),
+            key=lambda i: (-compte[i], -occurrences(i)),
+        )[:limite]
+        return [
+            Hit(documents[i][1]["source_id"], documents[i][1]["filename"], documents[i][0],
+                round(compte[i] / len(mots), 4))
+            for i in retenus
+        ]
 
     def context_for(self, query: str, source_ids: list[str] | None, max_chars: int = 12000) -> str:
         self._ensure()
