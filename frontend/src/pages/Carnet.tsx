@@ -12,9 +12,11 @@ import { formatDateHeure } from "../lib/format";
 type Filtre = "tous" | "summary" | "quiz";
 
 export function Carnet() {
-  const { artefacts, artefactsEtat, rafraichirArtefacts } = useAppData();
+  const { artefacts, artefactsEtat, rafraichirArtefacts, retirerArtefact } = useAppData();
   const { user } = useAuth();
   const [filtre, setFiltre] = useState<Filtre>("tous");
+  // Suppression en deux clics : « Supprimer » puis « Confirmer », sans fenêtre modale.
+  const [aConfirmer, setAConfirmer] = useState<string | null>(null);
 
   const liste = useMemo(() => {
     if (filtre === "tous") return artefacts;
@@ -131,6 +133,33 @@ export function Carnet() {
                     <Icon name="telecharger" size={13} />
                     Télécharger
                   </a>
+                  {aConfirmer === artefact.id ? (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn--danger btn--sm"
+                        onClick={() => {
+                          setAConfirmer(null);
+                          void retirerArtefact(artefact.id);
+                        }}
+                      >
+                        Confirmer
+                      </button>
+                      <button type="button" className="btn btn--sm" onClick={() => setAConfirmer(null)}>
+                        Annuler
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn--quiet btn--sm"
+                      onClick={() => setAConfirmer(artefact.id)}
+                      aria-label={`Supprimer ${artefact.title}`}
+                    >
+                      <Icon name="corbeille" size={13} />
+                      Supprimer
+                    </button>
+                  )}
                 </div>
               </article>
             ))}

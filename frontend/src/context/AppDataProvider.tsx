@@ -38,6 +38,7 @@ type AppDataValue = {
   artefactsEtat: Etat;
   rafraichirArtefacts: () => Promise<void>;
   enregistrerArtefact: (kind: ArtifactKind, titre: string, contenu: string) => Promise<Artifact | null>;
+  retirerArtefact: (id: string) => Promise<void>;
 
   sante: Health | null;
 };
@@ -233,6 +234,23 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     [push],
   );
 
+  const retirerArtefact = useCallback(
+    async (id: string) => {
+      const cible = artefacts.find((a) => a.id === id);
+      try {
+        await api.deleteArtifact(id);
+        setArtefacts((liste) => liste.filter((a) => a.id !== id));
+        push("Retiré du carnet", { message: cible?.title, tone: "info" });
+      } catch (erreur) {
+        push("Suppression impossible", {
+          message: erreur instanceof ApiError ? erreur.message : undefined,
+          tone: "error",
+        });
+      }
+    },
+    [push, artefacts],
+  );
+
   const nouvelleSession = useCallback(() => {
     const id = identifiant();
     try {
@@ -275,6 +293,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       artefactsEtat,
       rafraichirArtefacts,
       enregistrerArtefact,
+      retirerArtefact,
       sante,
     }),
     [
@@ -295,6 +314,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       artefactsEtat,
       rafraichirArtefacts,
       enregistrerArtefact,
+      retirerArtefact,
       sante,
     ],
   );

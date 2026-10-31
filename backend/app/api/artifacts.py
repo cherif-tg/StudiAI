@@ -83,3 +83,17 @@ async def telecharger_artifact(
             return FileResponse(chemin, media_type=row["mime"], filename=chemin.name)
 
     raise HTTPException(status_code=404, detail="Artefact introuvable.")
+
+
+@router.delete("/artifacts/{artifact_id}")
+async def supprimer_artifact(
+    artifact_id: str,
+    owner: str = Depends(proprietaire),
+    services: Services = Depends(get_services),
+) -> dict:
+    """Retire un artefact du carnet : la ligne et son fichier, après contrôle du propriétaire."""
+    ligne = services.journal.supprimer_artefact(owner, artifact_id)
+    if ligne is None:
+        raise HTTPException(status_code=404, detail="Artefact introuvable.")
+    Path(ligne["path"]).unlink(missing_ok=True)
+    return {"ok": True}

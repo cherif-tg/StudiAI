@@ -28,12 +28,29 @@ def _docx_text(path: Path) -> str:
     return "\n\n".join(p for p in parts if p.strip())
 
 
+def _nettoyer_pdf(texte: str) -> str:
+    """Recolle les PDF dont l'extraction met un mot par ligne.
+
+    Certains PDF (exports Google Docs notamment) sortent sous la forme
+    « mot\\n \\nmot\\n \\nmot ». Le passage devient du bruit pour le modèle
+    d'embedding, qui ne lit que le début de chaque passage. On ne touche qu'aux
+    textes qui présentent nettement ce motif.
+    """
+    if texte.count("\n \n") < 0.3 * max(1, len(texte.split())):
+        return texte
+    texte = re.sub(r"\n \n(?: \n)+", "\n\n", texte)   # deux séparateurs ou plus : paragraphe
+    texte = texte.replace("\n \n", " ")                  # séparateur simple : espace entre mots
+    texte = re.sub(r"\n(?=[.,;:!?)])", "", texte)        # ponctuation recollée au mot
+    texte = re.sub(r"(?<!\n)\n(?!\n)", " ", texte)        # retour à la ligne isolé
+    return re.sub(r"[ \t]{2,}", " ", texte)
+
+
 def extract_text(path: Path) -> str:
     suffix = path.suffix.lower()
     if suffix == ".pdf":
         from pypdf import PdfReader
 
-        return "\n\n".join((page.extract_text() or "") for page in PdfReader(str(path)).pages)
+        return _nettoyer_pdf("\n\n".join((page.extract_text() or "") for page in PdfReader(str(path)).pages))
     if suffix == ".docx":
         return _docx_text(path)
     if suffix in {".txt", ".md"}:

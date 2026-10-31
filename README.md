@@ -163,6 +163,25 @@ bilingue, export PDF/Word, graphiques. Voir `docs/ETAT_DU_PROJET.md`.
 Les règles sont dans [`CONTRIBUTING.md`](CONTRIBUTING.md) : conventions, tests à
 lancer, ce qu'on ne commite jamais.
 
+## 11. Correctifs du 31 octobre 2026
+
+| Problème | Solution | Fichiers |
+|---|---|---|
+| Une simple question produisait une carte « résumé », et une question hors du cours (ex. les index) recevait un résumé inventé | Règles de l'agent : une question reçoit une réponse citée dans le chat ; résumé et quiz seulement sur demande explicite. L'outil de résumé refuse un sujet absent des documents | `agent/orchestrator.py`, `tools/summarize.py` |
+| Erreur 500 : requêtes trop grosses pour la limite Groq gratuite (8 000 tokens/min) | Historique allégé (4 échanges, sans résultats d'outils, échange raté non mémorisé), 5 passages max par recherche, réponse plafonnée, message clair (503) au lieu d'une erreur 500 | `agent/orchestrator.py`, `tools/rag_search.py`, `services/llm.py` |
+| Réponses très lentes | Plus d'attente automatique du client Groq (jusqu'à 2 × 60 s) en cas de saturation, réflexion du modèle en effort faible, 2 recherches max par question | `services/llm.py`, `agent/orchestrator.py` |
+| « WHERE et HAVING » déclaré absent alors que le cours le traite | Nettoyage des PDF extraits « un mot par ligne », recherche par mots-clés en complément de la recherche par le sens, règle hors-corpus assouplie | `services/documents.py`, `services/rag.py`, `agent/orchestrator.py` |
+| Impossible de supprimer un artefact du carnet | Route `DELETE /artifacts/{id}` (contrôle du propriétaire, fichier effacé) et bouton « Supprimer » avec confirmation dans le Carnet | `api/artifacts.py`, `frontend/src/pages/Carnet.tsx`, `lib/api.ts`, `context/AppDataProvider.tsx` |
+| Bandeau cookies sans refus | Bouton « Refuser » (choix mémorisé 12 mois, seul le cookie de session reste actif) | `frontend/src/components/CookieConsent.tsx` |
+| Page d'accueil | Section « Après le MVP » en trois blocs, bandes colorées retirées des cartes, textes de « Nos limites » reformulés | `frontend/src/pages/Landing.tsx`, `styles/landing.css` |
+
+À savoir :
+
+- **Redéposer les documents déjà indexés** pour profiter du nettoyage des PDF.
+- La limite gratuite de Groq reste juste pour un agent qui enchaîne plusieurs appels : laisser
+  environ une minute entre deux questions, ou passer au palier payant (Dev Tier).
+- Après une modification de l'interface : `cd frontend; npm run build`, puis Ctrl+F5.
+
 ## Licence
 
 [MIT](LICENSE.md).

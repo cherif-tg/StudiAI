@@ -19,7 +19,9 @@ class RagSearchTool(Tool):
     }
 
     async def run(self, ctx: ToolContext, query: str, k: int = 5) -> ToolResult:
-        hits = await asyncio.to_thread(ctx.services.rag.search, query, int(k), ctx.source_ids)
+        # Le modèle choisit k lui-même : on le borne pour garder des requêtes légères.
+        k = max(1, min(int(k or 5), 5))
+        hits = await asyncio.to_thread(ctx.services.rag.search, query, k, ctx.source_ids)
         if not hits:
             return ToolResult("Aucun passage pertinent trouvé dans les sources.")
         text = "\n\n".join(f"[{i}] ({h.filename}) {h.text}" for i, h in enumerate(hits, 1))
